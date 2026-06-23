@@ -1,0 +1,18 @@
+{
+  "header": {
+    "movies": "Phim",
+    "theaters": "Rạp",
+    "promotions": "Khuyến Mãi",
+    "history": "Lịch Sử",
+    "membership": "Thành Viên",
+    "login": "Đăng Nhập",
+    "logout": "Đăng Xuất",
+    "language": "Ngôn Ngữ",
+    "theme": "Giao Diện"
+  },
+  "home": {
+    "nowShowing": "Phim Đang Chiếu",
+    "comingSoon": "Sắp Chiếu",
+    "topRated": "Top Phim Được Yêu Thích"
+  }
+}

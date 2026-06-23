@@ -1,0 +1,63 @@
+Để test luồng **Giữ ghế (Hold)** và **Nhả ghế tự động** trên Postman, chúng ta sẽ đóng vai một khách hàng đang dùng App điện thoại. Bạn hãy bật server Spring Boot lên, mở Postman và làm tuần tự theo kịch bản cực kỳ thú vị dưới đây nhé!
+
+### Kịch bản Test: Khách hàng chọn ghế -> Giữ ghế -> Đổi ý nhả ghế / Quên thanh toán
+
+---
+
+#### 📍 Bước 1: Lấy danh sách ghế để xem ghế nào đang Trống
+Khách hàng mở App ra và xem sơ đồ ghế của suất chiếu (Ví dụ: Suất chiếu ID = 1).
+
+1.  **Method:** `GET`
+2.  **URL:** `http://localhost:8080/api/showtime-seats/showtime/1` *(Thay số 1 bằng ID suất chiếu bạn đang có trong máy)*
+3.  **Hành động:** Nhấn **Send**.
+4.  **Kết quả:** Bạn sẽ nhận được 1 danh sách dài các ghế. Hãy kéo xuống, tìm và ghi ra giấy **2 cái ID** đang có `"status": 0` (Ví dụ: ID là `10` và `11`).
+
+---
+
+#### 📍 Bước 2: Test API Giữ Ghế (Hold Seat)
+Khách hàng bấm chọn ghế số 10 và 11. Hệ thống cần khóa 2 ghế này lại không cho người khác mua.
+
+1.  **Method:** `PUT` (Lưu ý: Là PUT nhé, không phải POST)
+2.  **URL:** `http://localhost:8080/api/showtime-seats/hold`
+3.  **Cấu hình Body:**
+    *   Chọn tab **Body** -> Chọn **raw** -> Chọn chữ Text đổi thành **JSON**.
+    *   Nhập mảng ID ghế bạn vừa tìm được ở Bước 1:
+        ```json
+        [10, 11]
+        ```
+4.  **Hành động:** Nhấn **Send**.
+5.  **Kết quả mong đợi:** Postman báo *"Đã giữ 2 ghế thành công..."*.
+6.  **Kiểm tra DB:** Mở MySQL, chạy lệnh `SELECT * FROM showtime_seat WHERE id IN (10, 11);`. Bạn sẽ thấy `status` đã đổi thành `1`, và cột `hold_timestamp` đã có thời gian!
+
+---
+
+#### 📍 Bước 3: Test API Nhả Ghế (Khách đổi ý)
+Khách hàng ra tới màn hình thanh toán nhưng thấy giá vé đắt quá nên bấm nút "Hủy" hoặc quay lại. App sẽ gọi API nhả ghế.
+
+1.  **Method:** `PUT`
+2.  **URL:** `http://localhost:8080/api/showtime-seats/release`
+3.  **Body (JSON):**
+    ```json
+    [10, 11]
+    
+```
+4.  **Hành động:** Nhấn **Send**.
+5.  **Kết quả:** Postman báo *"Đã nhả ghế thành công"*. Bạn check lại DB sẽ thấy `status` của ID 10, 11 về lại `0` và `hold_timestamp` biến thành `NULL`.
+
+---
+
+#### 📍 Bước 4: Test "Trùm cuối" - Tự động nhả ghế (Scheduled Task)
+Khách hàng giữ ghế nhưng... tắt app đi ngủ, không bấm nút Hủy. Chúng ta xem hệ thống có tự dọn dẹp không nhé.
+
+1.  **Giữ lại ghế:** Lặp lại **Bước 2** (Gọi API `/hold` với ID `[10, 11]`). Check DB để chắc chắn nó đã mang `status = 1`.
+2.  **Chờ đợi:** Ngồi nhâm nhi tách trà trong 1 phút (Nếu bạn đã đổi code `minusMinutes(10)` thành `minusMinutes(1)` như mình gợi ý).
+3.  **Quan sát IntelliJ:** Chú ý nhìn vào màn hình đen (Console) của IntelliJ/Eclipse. Đúng 1 phút sau, bạn sẽ thấy dòng chữ:
+    > `Đã giải phóng 2 ghế hết hạn.`
+4.  **Kiểm tra DB lần cuối:** Vào MySQL xem lại ID 10 và 11. Hệ thống đã tự động đưa nó về `0` một cách ma thuật mà không cần bạn bấm gì cả!
+
+---
+
+**Lưu ý sau khi test xong:**
+Nếu ở bước 4 bạn test thành công, nhớ vào lại file `SeatCleanupService.java` đổi `minusMinutes(1)` trở về `minusMinutes(10)` để đúng với nghiệp vụ thực tế nhé.
+
+Hãy làm theo các bước này và tận hưởng cảm giác code của mình đang chạy trơn tru như một cỗ máy. Báo mình biết kết quả nhé!

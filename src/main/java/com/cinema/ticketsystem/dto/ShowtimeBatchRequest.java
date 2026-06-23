@@ -1,0 +1,103 @@
+package com.cinema.ticketsystem.dto;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.time.LocalDate;
+import java.util.List;
+
+public class ShowtimeBatchRequest {
+
+    private Reference movie;
+    private Reference room;
+    private LocalDate showDate;
+
+    @JsonProperty("show_dates")
+    private List<LocalDate> showDates;
+
+    @JsonProperty("start_time")
+    private String startTime;
+
+    @JsonProperty("start_times")
+    private List<String> startTimes;
+
+    private Double basePrice;
+    private String format;
+
+    public Reference getMovie() {
+        return movie;
+    }
+
+    public void setMovie(Reference movie) {
+        this.movie = movie;
+    }
+
+    public Reference getRoom() {
+        return room;
+    }
+
+    public void setRoom(Reference room) {
+        this.room = room;
+    }
+
+    public LocalDate getShowDate() {
+        return showDate;
+    }
+
+    public void setShowDate(LocalDate showDate) {
+        this.showDate = showDate;
+    }
+
+    @JsonProperty("show_dates")
+    public List<LocalDate> getShowDates() {
+        return showDates;
+    }
+
+    @JsonProperty("show_dates")
+    public void setShowDates(List<LocalDate> showDates) {
+        this.showDates = showDates;
+    }
+
+    public String getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(String startTime) {
+        this.startTime = startTime;
+    }
+
+    public List<String> getStartTimes() {
+        return startTimes;
+    }
+
+    public void setStartTimes(List<String> startTimes) {
+        this.startTimes = startTimes;
+    }
+
+    public Double getBasePrice() {
+        return basePrice;
+    }
+
+    public void setBasePrice(Double basePrice) {
+        this.basePrice = basePrice;
+    }
+
+    public String getFormat() {
+        return format;
+    }
+
+    public void setFormat(String format) {
+        this.format = format;
+    }
+
+    public static class Reference {
+        private Long id;
+
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+    }
+}

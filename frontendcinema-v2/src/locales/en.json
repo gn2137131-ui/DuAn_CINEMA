@@ -1,0 +1,18 @@
+{
+  "header": {
+    "movies": "Movies",
+    "theaters": "Theaters",
+    "promotions": "Promotions",
+    "history": "History",
+    "membership": "Membership",
+    "login": "Login",
+    "logout": "Logout",
+    "language": "Language",
+    "theme": "Theme"
+  },
+  "home": {
+    "nowShowing": "Now Showing",
+    "comingSoon": "Coming Soon",
+    "topRated": "Top Rated Movies"
+  }
+}
