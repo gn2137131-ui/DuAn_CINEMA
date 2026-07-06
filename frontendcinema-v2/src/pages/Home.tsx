@@ -28,8 +28,7 @@ export default function Home() {
     const fetchTodayShowtimes = async () => {
       try {
         const today = new Date().toISOString().split('T')[0];
-        const res = await axiosClient.get(`/showtimes/daily?date=${today}`);
-        const data = res.data;
+        const data = await axiosClient.get(`/showtimes/daily?date=${today}`);
         setTodayShowtimes(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error('Failed to fetch today showtimes:', err);
