@@ -29,6 +29,19 @@ public class DataSeeder {
                     System.out.println("ADMIN CREATED: admin / Ngiau@123");
                     System.out.println("====================================================");
                 }
+
+                if (userRepository.findByUsername("staff").isEmpty()) {
+                    System.out.println("CREATING DEFAULT STAFF ACCOUNT...");
+                    User staff = new User();
+                    staff.setUsername("staff");
+                    staff.setEmail("staff@gmail.com");
+                    staff.setPassword(passwordEncoder.encode("Staff@123"));
+                    staff.setPhone("0987654321");
+                    staff.setFullName("Nhân Viên Bán Vé");
+                    staff.setRole(Role.EMPLOYEE);
+                    userRepository.save(staff);
+                    System.out.println("STAFF CREATED: staff / Staff@123");
+                }
             } catch (Exception e) {
                 System.out.println("Could not create admin: " + e.getMessage());
             }
