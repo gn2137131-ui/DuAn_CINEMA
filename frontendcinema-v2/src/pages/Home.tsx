@@ -10,6 +10,7 @@ import { Movie } from '../types/Movie';
 import { Link } from 'react-router-dom';
 const BACKEND_IMAGE_URL = import.meta.env.VITE_BACKEND_URL || '';
 import Banner from '../components/Banner';
+import axiosClient from '../api/axiosClient';
 export default function Home() {
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,8 +28,8 @@ export default function Home() {
     const fetchTodayShowtimes = async () => {
       try {
         const today = new Date().toISOString().split('T')[0];
-        const res = await fetch(`${BACKEND_IMAGE_URL}/api/showtimes/daily?date=${today}`);
-        const data = await res.json();
+        const res = await axiosClient.get(`/showtimes/daily?date=${today}`);
+        const data = res.data;
         setTodayShowtimes(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error('Failed to fetch today showtimes:', err);
