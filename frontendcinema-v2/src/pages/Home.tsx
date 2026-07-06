@@ -52,9 +52,8 @@ export default function Home() {
 
   // Fetch movies with proper poster URLs, banner, and status
   useEffect(() => {
-    fetch('https://duancinema-production.up.railway.app/api/movies')
-      .then(res => res.json())
-      .then((data: any[]) => {
+    axiosClient.get('/movies')
+      .then((data: any) => {
         const formatted = data.map(m => {
           const rawPoster = m.posterUrl || m.poster_url || m.poster || '';
           const poster = rawPoster && !rawPoster.startsWith('http') ? `${BACKEND_IMAGE_URL}${rawPoster}` : rawPoster;
@@ -78,9 +77,8 @@ export default function Home() {
 
   // Fetch banner config từ backend (do admin cấu hình)
   useEffect(() => {
-    fetch('https://duancinema-production.up.railway.app/api/banner-config')
-      .then(res => res.json())
-      .then((data: any[]) => {
+    axiosClient.get('/banner-config')
+      .then((data: any) => {
         if (data && data.length > 0) {
           const formatted = data.map(m => {
             const rawPoster = m.posterUrl || m.poster_url || m.poster || '';
@@ -98,9 +96,8 @@ export default function Home() {
 
   // Fetch promotions from backend
   useEffect(() => {
-    fetch('https://duancinema-production.up.railway.app/api/discount-codes/public')
-      .then(res => res.json())
-      .then(data => {
+    axiosClient.get('/discount-codes/public')
+      .then((data: any) => {
         if (Array.isArray(data)) {
           setPromotions(data);
         }

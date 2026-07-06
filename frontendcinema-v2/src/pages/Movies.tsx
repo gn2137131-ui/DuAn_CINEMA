@@ -291,9 +291,8 @@ export default function Movies() {
 
     useEffect(() => {
         // Fetch age rating labels once
-        fetch(`${import.meta.env.VITE_BACKEND_URL}/api/age-ratings`)
-            .then(res => res.json())
-            .then((data: Record<string, string>) => setAgeRatingLabels(data))
+        axiosClient.get('/age-ratings')
+            .then(res => setAgeRatingLabels(res as unknown as Record<string, string>))
             .catch(err => console.error('Failed to load age rating labels:', err));
             
         const fetchTodayShowtimes = async () => {
