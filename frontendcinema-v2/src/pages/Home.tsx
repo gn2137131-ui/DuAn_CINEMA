@@ -53,7 +53,7 @@ export default function Home() {
   // Fetch movies with proper poster URLs, banner, and status
   useEffect(() => {
     axiosClient.get('/movies')
-      .then((data: any[]) => {
+      .then((data: any) => {
         const formatted = data.map((m: any) => {
           const rawPoster = m.posterUrl || m.poster_url || m.poster || '';
           const poster = rawPoster && !rawPoster.startsWith('http') ? `${BACKEND_IMAGE_URL}${rawPoster}` : rawPoster;
@@ -78,7 +78,7 @@ export default function Home() {
   // Fetch banner config từ backend (do admin cấu hình)
   useEffect(() => {
     axiosClient.get('/banner-config')
-      .then((data: any[]) => {
+      .then((data: any) => {
         if (data && data.length > 0) {
           const formatted = data.map((m: any) => {
             const rawPoster = m.posterUrl || m.poster_url || m.poster || '';
