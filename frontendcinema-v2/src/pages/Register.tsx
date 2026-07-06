@@ -2,8 +2,6 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, Film, User, Phone, Loader2 } from 'lucide-react';
-import Header from '../components/Header';
-import Footer from '../components/Footer';
 import axiosClient from '../api/axiosClient';
 
 export default function Register() {
@@ -82,7 +80,6 @@ export default function Register() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 to-yellow-50 dark:from-slate-950 dark:to-slate-900 dark:text-white">
-      <Header />
 
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-md mx-auto">
@@ -305,8 +302,7 @@ export default function Register() {
           </motion.div>
         </div>
       </div>
-
-      <Footer />
     </div>
   );
 }
+
