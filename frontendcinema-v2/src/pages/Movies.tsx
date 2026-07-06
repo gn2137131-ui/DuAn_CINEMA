@@ -297,7 +297,8 @@ export default function Movies() {
             
         const fetchTodayShowtimes = async () => {
             try {
-                const today = new Date().toISOString().split('T')[0];
+                const d = new Date();
+                const today = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
                 const res = await axiosClient.get(`/showtimes/daily?date=${today}`);
                 const data = Array.isArray(res) ? res : (res as any).data;
                 const ids = data.map((st: any) => st.movie.id);
