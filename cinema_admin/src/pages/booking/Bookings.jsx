@@ -55,7 +55,13 @@ export function Bookings() {
   const day = String(today.getDate()).padStart(2, '0');
   const todayStr = `${year}-${month}-${day}`;
 
-  const bookingsToday = bookings.filter(b => b.bookingTime?.startsWith(todayStr));
+  const getLocalDateString = (dateStr) => {
+    if (!dateStr) return '';
+    const d = new Date(dateStr + (!dateStr.endsWith('Z') ? 'Z' : ''));
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
+
+  const bookingsToday = bookings.filter(b => getLocalDateString(b.bookingTime) === todayStr);
 
   const revenueToday = bookingsToday
     .filter(b => b.paymentStatus === 'PAID')
@@ -281,7 +287,7 @@ export function Bookings() {
                               showtime: `${showtimeDate} ${startTime}`,
                               room: roomName,
                               seats: seatsList,
-                              bookingDate: new Date(booking.bookingTime).toLocaleString('vi-VN'),
+                              bookingDate: new Date(booking.bookingTime + (!booking.bookingTime.endsWith('Z') ? 'Z' : '')).toLocaleString('vi-VN'),
                               total: booking.totalPrice,
                               paymentMethod: booking.paymentMethod || 'QR_PAY'
                             });
