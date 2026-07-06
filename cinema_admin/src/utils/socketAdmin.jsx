@@ -1,7 +1,7 @@
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 
-const SOCKET_URL = 'http://localhost:8080/ws-cinema';
+const SOCKET_URL = 'https://duancinema-production.up.railway.app/ws-cinema';
 
 class SocketAdminService {
     constructor() {

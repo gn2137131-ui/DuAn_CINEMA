@@ -119,7 +119,7 @@ export default function MovieDetail() {
   };
 
   // Helper to convert standard youtube link to embed link
-  const BACKEND_IMAGE_URL = 'http://localhost:8080/uploads/';
+  const BACKEND_IMAGE_URL = 'https://duancinema-production.up.railway.app/uploads/';
 
   // Fetch movie details and showtimes
   // Trigger Vite rebuild

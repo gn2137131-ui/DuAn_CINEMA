@@ -198,7 +198,7 @@ export default function Checkout() {
     // Build absolute backend URL for SSE so dev server proxy issues don't route to Vite
     const backendBase = (axiosClient && axiosClient.defaults && typeof axiosClient.defaults.baseURL === 'string' && axiosClient.defaults.baseURL)
       ? String(axiosClient.defaults.baseURL).replace(/\/+$/, '')
-      : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api');
+      : (import.meta.env.VITE_API_BASE_URL || 'https://duancinema-production.up.railway.app/api');
 
     const eventSourceUrl = `${backendBase}/notifications/subscribe/${qrInfo.bookingId}`;
     console.log('SSE connecting to', eventSourceUrl);

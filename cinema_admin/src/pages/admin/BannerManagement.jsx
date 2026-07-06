@@ -4,7 +4,7 @@ import axiosClient from '../../api/axiosClient';
 import toast from 'react-hot-toast';
 
 const MAX_BANNERS = 6;
-const BACKEND_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const BACKEND_URL = import.meta.env.VITE_API_URL || 'https://duancinema-production.up.railway.app';
 
 export function BannerManagement() {
     const [allMovies, setAllMovies] = useState([]);

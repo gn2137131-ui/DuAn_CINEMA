@@ -18,7 +18,7 @@ export default function Footer() {
   });
 
   useEffect(() => {
-    fetch('http://localhost:8080/api/settings')
+    fetch('https://duancinema-production.up.railway.app/api/settings')
       .then(res => res.json())
       .then(data => {
         if (data) {

@@ -4,7 +4,7 @@ import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import axiosClient from '../api/axiosClient';
 
-const BACKEND_WS_URL = 'http://localhost:8080/ws-cinema';
+const BACKEND_WS_URL = 'https://duancinema-production.up.railway.app/ws-cinema';
 
 const formatCurrency = (amount) => {
   if (!amount) return '0đ';
