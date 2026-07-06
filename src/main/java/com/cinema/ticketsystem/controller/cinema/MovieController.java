@@ -11,15 +11,38 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
+
+import com.cinema.ticketsystem.repository.cinema.MovieRepository;
 
 @RestController
 @RequestMapping("/api/movies")
-@CrossOrigin(origins = "*") // Tránh lỗi chặn CORS từ cổng chạy React JS
+// Fix #3: xóa @CrossOrigin("*") — CORS quản lý tập trung ở SecurityConfig
 public class MovieController {
 
     @Autowired
     private MovieService movieService;
+
+    @Autowired
+    private MovieRepository movieRepository;
+
+    // 1.2. Lấy danh sách phim đang chiếu
+    @GetMapping("/now-showing")
+    @org.springframework.cache.annotation.Cacheable("movies")
+    public ResponseEntity<List<Movie>> getNowShowingMovies() {
+        LocalDate now = LocalDate.now();
+        return ResponseEntity.ok(movieRepository.findByReleaseDateLessThanEqualAndEndDateGreaterThanEqual(now, now));
+    }
+
+    // 1.3. Lấy danh sách phim mới ra mắt
+    @GetMapping("/new-releases")
+    @org.springframework.cache.annotation.Cacheable("movies")
+    public ResponseEntity<List<Movie>> getNewReleases(@RequestParam(defaultValue = "7") int days) {
+        LocalDate now = LocalDate.now();
+        LocalDate from = now.minusDays(days);
+        return ResponseEntity.ok(movieRepository.findByReleaseDateBetween(from, now));
+    }
 
     // 1. Lấy tất cả danh sách phim
     // Endpoint: GET /api/movies
@@ -31,7 +54,7 @@ public class MovieController {
     // 1.1. Lấy chi tiết phim theo ID
     // Endpoint: GET /api/movies/{id}
     @GetMapping("/{id}")
-    public ResponseEntity<Movie> getMovieById(@PathVariable Long id) {
+    public ResponseEntity<Movie> getMovieById(@PathVariable("id") Long id) {
         return movieService.getMovieById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -43,9 +66,10 @@ public class MovieController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> addMovie(
             @RequestPart("movie") Movie movie,
-            @RequestPart("file") MultipartFile file) {
+            @RequestPart("file") MultipartFile file,
+            @RequestPart(value = "bannerFile", required = false) MultipartFile bannerFile) {
         try {
-            Movie savedMovie = movieService.addMovie(movie, file);
+            Movie savedMovie = movieService.addMovie(movie, file, bannerFile);
             return ResponseEntity.ok(savedMovie);
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -58,11 +82,12 @@ public class MovieController {
     @PutMapping(value = "/edit/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> updateMovie(
-            @PathVariable Long id,
+            @PathVariable("id") Long id,
             @RequestPart("movie") Movie movieDetails,
-            @RequestPart(value = "file", required = false) MultipartFile file) {
+            @RequestPart(value = "file", required = false) MultipartFile file,
+            @RequestPart(value = "bannerFile", required = false) MultipartFile bannerFile) {
         try {
-            Movie updatedMovie = movieService.updateMovie(id, movieDetails, file);
+            Movie updatedMovie = movieService.updateMovie(id, movieDetails, file, bannerFile);
             return ResponseEntity.ok(updatedMovie);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
@@ -76,7 +101,7 @@ public class MovieController {
     // Endpoint: DELETE /api/movies/{id}
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> deleteMovie(@PathVariable Long id) {
+    public ResponseEntity<?> deleteMovie(@PathVariable("id") Long id) {
         try {
             movieService.deleteMovie(id);
             return ResponseEntity.ok("Xóa phim và các dữ liệu suất chiếu liên quan thành công!");
@@ -90,10 +115,10 @@ public class MovieController {
     }
 
     // 5. Bật/tắt trạng thái HOT của phim
-    // Endpoint: PUT /api/movies/{id}/toggle-hot
-    @PutMapping("/{id}/toggle-hot")
+    // Endpoint: PUT /api/movies/{id}/hot
+    @PutMapping("/{id}/hot")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> toggleHotStatus(@PathVariable Long id) {
+    public ResponseEntity<?> toggleHotStatus(@PathVariable("id") Long id) {
         try {
             movieService.toggleHotStatus(id);
             return ResponseEntity.ok().body(java.util.Collections.singletonMap("success", true));

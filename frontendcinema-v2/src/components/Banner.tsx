@@ -12,7 +12,7 @@ export default function Banner({ movies }: BannerProps) {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(1); // 1 = next, -1 = prev
 
-  const validMovies = movies.filter(m => m && m.banner);
+  const validMovies = movies.filter(m => m && (m.banner || m.poster));
 
   const goTo = useCallback((index: number, dir: number) => {
     setDirection(dir);
@@ -70,9 +70,9 @@ export default function Banner({ movies }: BannerProps) {
           className="absolute inset-0"
         >
           <img
-            src={movie.banner}
+            src={movie.banner || movie.poster}
             alt={movie.title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover object-[center_15%]"
             onError={(e) => {
               (e.target as HTMLImageElement).src = movie.poster || '';
             }}

@@ -67,6 +67,9 @@ public class Movie {
     @Column(name = "poster_url")
     private String posterUrl; 
 
+    @Column(name = "banner_url")
+    private String bannerUrl; 
+
     @Column(name = "trailer_url")
     private String trailerUrl; 
 
@@ -83,7 +86,7 @@ public class Movie {
     private Boolean isHot = false;
 
     @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonIgnoreProperties({"movie", "hibernateLazyInitializer", "handler"}) 
+    @JsonIgnore
     @OnDelete(action = OnDeleteAction.CASCADE)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude

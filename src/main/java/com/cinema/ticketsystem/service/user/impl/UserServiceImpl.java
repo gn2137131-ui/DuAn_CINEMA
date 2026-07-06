@@ -3,17 +3,17 @@ package com.cinema.ticketsystem.service.user.impl;
 import com.cinema.ticketsystem.entity.user.User;
 import com.cinema.ticketsystem.repository.user.UserRepository;
 import com.cinema.ticketsystem.service.user.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     @Override
     public User findByEmail(String email) {

@@ -34,7 +34,7 @@ export type MovieType = {
 
 type ViewMode = 'grid' | 'list';
 type SortKey = 'rating' | 'releaseDate' | 'duration' | 'title' | 'views';
-type TabKey = 'all' | 'nowShowing' | 'comingSoon';
+type TabKey = 'all' | 'nowShowing' | 'comingSoon' | 'today';
 
 const AGE_RATING_COLORS: Record<string, string> = {
     P: 'bg-green-500',
@@ -285,6 +285,7 @@ function MovieListCard({ movie, index, onPlayTrailer }: { movie: MovieType; inde
 
 export default function Movies() {
     const [movies, setMovies] = useState<MovieType[]>([]);
+    const [todayMovieIds, setTodayMovieIds] = useState<number[]>([]);
     // Age rating labels state
     const [ageRatingLabels, setAgeRatingLabels] = useState<Record<string, string>>({});
 
@@ -294,6 +295,19 @@ export default function Movies() {
             .then(res => res.json())
             .then((data: Record<string, string>) => setAgeRatingLabels(data))
             .catch(err => console.error('Failed to load age rating labels:', err));
+            
+        const fetchTodayShowtimes = async () => {
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                const res = await axiosClient.get(`/showtimes/daily?date=${today}`);
+                const data = Array.isArray(res) ? res : (res as any).data;
+                const ids = data.map((st: any) => st.movie.id);
+                setTodayMovieIds(Array.from(new Set(ids)));
+            } catch (err) {
+                console.error('Failed to fetch today showtimes:', err);
+            }
+        };
+        fetchTodayShowtimes();
     }, []);
 
     const [isLoading, setIsLoading] = useState(true);
@@ -417,6 +431,7 @@ export default function Movies() {
         let result = movies.filter(movie => {
             if (tab === 'nowShowing' && movie.status !== 'nowShowing') return false;
             if (tab === 'comingSoon' && movie.status !== 'comingSoon') return false;
+            if (tab === 'today' && !todayMovieIds.includes(movie.id)) return false;
 
             if (searchQuery) {
                 const q = searchQuery.toLowerCase();
@@ -515,6 +530,7 @@ export default function Movies() {
                             { key: 'all', label: 'Tất Cả', count: movies.length },
                             { key: 'nowShowing', label: 'Đang Chiếu', count: nowShowingCount },
                             { key: 'comingSoon', label: 'Sắp Chiếu', count: comingSoonCount },
+                            { key: 'today', label: 'Hôm Nay', count: todayMovieIds.length },
                         ] as const).map(({ key, label, count }) => (
                             <button
                                 key={key}

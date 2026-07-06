@@ -1,6 +1,7 @@
+import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { Star, Clock, Calendar, MessageSquare, Send, Reply, CornerDownRight, Play, X, CheckCircle, Share2 } from 'lucide-react';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import Header from '../components/Header';
@@ -113,7 +114,7 @@ export default function MovieDetail() {
       }).catch(console.error);
     } else {
       navigator.clipboard.writeText(window.location.href);
-      alert('Đã copy link phim!');
+      toast.success('Đã copy link phim!');
     }
   };
 
@@ -293,11 +294,11 @@ export default function MovieDetail() {
   // Submit star review
   const handleSubmitReview = async () => {
     if (myRating === 0) {
-      alert('Vui lòng chọn số sao đánh giá!');
+      toast.error('Vui lòng chọn số sao đánh giá!');
       return;
     }
     if (!currentUser) {
-      alert('Vui lòng đăng nhập để đánh giá phim!');
+      toast.error('Vui lòng đăng nhập để đánh giá phim!');
       return;
     }
     setIsSubmittingReview(true);
@@ -311,7 +312,7 @@ export default function MovieDetail() {
       else if (reviewResponse?.data) setReviewData(reviewResponse.data);
       setTimeout(() => setReviewSuccess(false), 3000);
     } catch (err: any) {
-      alert(err?.response?.data || 'Bạn cần đã xem phim này mới được đánh giá!');
+      toast.error(err?.response?.data || 'Bạn cần đã xem phim này mới được đánh giá!');
     } finally {
       setIsSubmittingReview(false);
     }
@@ -328,7 +329,7 @@ export default function MovieDetail() {
       setComments([addedComment, ...comments]);
       setNewComment('');
     } catch (err: any) {
-      alert(err?.response?.data || 'Không thể đăng bình luận lúc này.');
+      toast.error(err?.response?.data || 'Không thể đăng bình luận lúc này.');
     } finally {
       setIsSubmittingComment(false);
     }
@@ -358,21 +359,21 @@ export default function MovieDetail() {
       setReplyingTo(null);
       setReplyContent('');
     } catch (err: any) {
-      alert(err?.response?.data || 'Không thể đăng trả lời lúc này.');
+      toast.error(err?.response?.data || 'Không thể đăng trả lời lúc này.');
     } finally {
       setIsSubmittingComment(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-orange-50 to-yellow-50">
+    <div className="min-h-screen bg-gradient-to-b from-orange-50 to-yellow-50 dark:from-slate-950 dark:to-slate-900 dark:text-white">
       <Header />
 
       {/* Loading State */}
       {isLoading && (
         <div className="container mx-auto px-4 py-20 text-center">
-          <div className="w-16 h-16 border-4 border-gray-200 border-t-red-600 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-800 font-semibold">Đang tải thông tin phim...</p>
+          <div className="w-16 h-16 border-4 border-gray-200 dark:border-slate-700 border-t-red-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-800 dark:text-gray-200 font-semibold">Đang tải thông tin phim...</p>
         </div>
       )}
 
@@ -405,18 +406,18 @@ export default function MovieDetail() {
               className="relative z-10 w-20 h-20 bg-white/20 backdrop-blur border border-white/40 rounded-full flex items-center justify-center cursor-pointer hover:scale-110 transition-transform shadow-2xl group"
               onClick={() => setShowTrailerModal(true)}
             >
-              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center group-hover:bg-red-50 transition-colors">
+              <div className="w-16 h-16 bg-white dark:bg-slate-900 rounded-full flex items-center justify-center group-hover:bg-red-50 transition-colors">
                 <Play className="w-8 h-8 text-red-700 ml-1 fill-current" />
               </div>
             </div>
           </section>
 
-          <div className="bg-white">
+          <div className="bg-white dark:bg-slate-900">
             <div className="container mx-auto px-4">
               {/* Floating Poster & Basic Info */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
                 <div className="lg:col-span-3 -mt-32 relative z-20">
-                  <div className="rounded-xl overflow-hidden shadow-2xl border-4 border-white bg-white">
+                  <div className="rounded-xl overflow-hidden shadow-2xl border-4 border-white bg-white dark:bg-slate-900">
                     <ImageWithFallback
                       src={movie.posterUrl}
                       alt={movie.title}
@@ -428,20 +429,20 @@ export default function MovieDetail() {
                 <div className="lg:col-span-9 pt-8 pb-4">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
-                      <h1 className="text-3xl lg:text-4xl font-bold text-gray-900">{movie.title}</h1>
+                      <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-gray-100">{movie.title}</h1>
                       {movie.ageRestriction && (
                         <span className="bg-orange-500 text-white font-bold px-2 py-0.5 rounded text-sm">
                           {movie.ageRestriction}
                         </span>
                       )}
                     </div>
-                    <button onClick={handleShare} className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full font-semibold transition-colors shadow-sm">
+                    <button onClick={handleShare} className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 text-gray-700 dark:text-gray-300 rounded-full font-semibold transition-colors shadow-sm">
                       <Share2 className="w-4 h-4" />
                       Chia sẻ
                     </button>
                   </div>
 
-                  <div className="flex items-center gap-4 text-gray-600 text-sm mb-4">
+                  <div className="flex items-center gap-4 text-gray-600 dark:text-gray-400 text-sm mb-4">
                     <div className="flex items-center gap-1">
                       <Clock className="w-4 h-4 text-orange-500" />
                       <span>{movie.duration} Phút</span>
@@ -454,50 +455,50 @@ export default function MovieDetail() {
 
                   <div className="flex items-center gap-2 mb-6">
                     <Star className="w-5 h-5 text-orange-500 fill-current" />
-                    <span className="font-bold text-lg text-gray-900">{movie.rating}</span>
-                    <span className="text-sm text-gray-500">({reviewData.totalReviews} votes)</span>
+                    <span className="font-bold text-lg text-gray-900 dark:text-gray-100">{movie.rating}</span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">({reviewData.totalReviews} votes)</span>
                   </div>
 
-                  <div className="space-y-3 text-sm text-gray-700 max-w-2xl">
+                  <div className="space-y-3 text-sm text-gray-700 dark:text-gray-300 max-w-2xl">
                     <div className="grid grid-cols-[100px_1fr]">
-                      <span className="text-gray-500">Quốc gia:</span>
+                      <span className="text-gray-500 dark:text-gray-400">Quốc gia:</span>
                       <span>Việt Nam</span>
                     </div>
                     <div className="grid grid-cols-[100px_1fr]">
-                      <span className="text-gray-500">Nhà sản xuất:</span>
+                      <span className="text-gray-500 dark:text-gray-400">Nhà sản xuất:</span>
                       <span>{movie.productionCompany || 'Đang cập nhật'}</span>
                     </div>
                     <div className="grid grid-cols-[100px_1fr] items-center">
-                      <span className="text-gray-500">Thể loại:</span>
+                      <span className="text-gray-500 dark:text-gray-400">Thể loại:</span>
                       <div className="flex gap-2 flex-wrap">
                         {movie.genre?.split(',').map((g, idx) => (
-                          <span key={idx} className="border border-gray-300 rounded px-3 py-1">{g.trim()}</span>
+                          <span key={idx} className="border border-gray-300 dark:border-slate-700 rounded px-3 py-1">{g.trim()}</span>
                         ))}
                       </div>
                     </div>
                     {movie.language && (
                       <div className="grid grid-cols-[100px_1fr] items-center mt-2">
-                        <span className="text-gray-500">Ngôn ngữ:</span>
+                        <span className="text-gray-500 dark:text-gray-400">Ngôn ngữ:</span>
                         <div className="flex gap-2 flex-wrap">
                           {movie.language?.split(';').map((lang, idx) => (
-                            <span key={idx} className="border border-gray-300 rounded px-3 py-1">{lang.trim()}</span>
+                            <span key={idx} className="border border-gray-300 dark:border-slate-700 rounded px-3 py-1">{lang.trim()}</span>
                           ))}
                         </div>
                       </div>
                     )}
                     <div className="grid grid-cols-[100px_1fr] items-center mt-2">
-                      <span className="text-gray-500">Đạo diễn:</span>
+                      <span className="text-gray-500 dark:text-gray-400">Đạo diễn:</span>
                       <div className="flex gap-2 flex-wrap">
                         {movie.director?.split(',').map((d, idx) => (
-                          <span key={idx} className="border border-gray-300 rounded px-3 py-1">{d.trim()}</span>
+                          <span key={idx} className="border border-gray-300 dark:border-slate-700 rounded px-3 py-1">{d.trim()}</span>
                         ))}
                       </div>
                     </div>
                     <div className="grid grid-cols-[100px_1fr] items-center">
-                      <span className="text-gray-500">Diễn viên:</span>
+                      <span className="text-gray-500 dark:text-gray-400">Diễn viên:</span>
                       <div className="flex flex-wrap gap-2">
                         {movie.cast?.split(',').map((c, idx) => (
-                          <span key={idx} className="border border-gray-300 rounded px-3 py-1">{c.trim()}</span>
+                          <span key={idx} className="border border-gray-300 dark:border-slate-700 rounded px-3 py-1">{c.trim()}</span>
                         ))}
                       </div>
                     </div>
@@ -511,17 +512,17 @@ export default function MovieDetail() {
                 <div className="lg:col-span-8">
                   {/* Nội Dung Phim */}
                   <div className="mb-10">
-                    <h2 className="text-xl font-bold text-gray-900 mb-4 border-l-4 border-[#0056b3] pl-3 uppercase">Nội Dung Phim</h2>
-                    <p className="text-gray-700 leading-relaxed text-sm lg:text-base text-justify">
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 border-l-4 border-[#0056b3] pl-3 uppercase">Nội Dung Phim</h2>
+                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-sm lg:text-base text-justify">
                       {movie.description}
                     </p>
                   </div>
 
                   {/* Lịch Chiếu */}
                   <div className="mb-10 mt-8">
-                    <h2 className="text-xl font-bold text-gray-900 mb-4 border-l-4 border-[#0056b3] pl-3 uppercase">Lịch Chiếu</h2>
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 border-l-4 border-[#0056b3] pl-3 uppercase">Lịch Chiếu</h2>
 
-                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6 border-b border-gray-200 pb-2">
+                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6 border-b border-gray-200 dark:border-slate-700 pb-2">
                       {/* Date tabs */}
                       <div className="flex overflow-x-auto gap-2 scrollbar-none pb-2 w-full md:w-auto">
                         {dates.map((date, idx) => {
@@ -536,7 +537,7 @@ export default function MovieDetail() {
                               key={date}
                               onClick={() => setSelectedDate(date)}
                               className={`flex-shrink-0 flex flex-col items-center justify-center w-20 py-2 rounded-t-lg transition-colors border-b-2 ${
-                                isSelected ? 'bg-[#0056b3] border-[#0056b3] text-white' : 'bg-transparent border-transparent text-gray-600 hover:text-[#0056b3]'
+                                isSelected ? 'bg-[#0056b3] border-[#0056b3] text-white' : 'bg-transparent border-transparent text-gray-600 dark:text-gray-400 hover:text-[#0056b3]'
                               }`}
                             >
                               <span className={`text-xs ${isSelected ? 'opacity-90' : 'opacity-70'}`}>{idx === 0 ? 'Hôm Nay' : dayName}</span>
@@ -548,13 +549,13 @@ export default function MovieDetail() {
 
                       {/* Dropdowns */}
                       <div className="flex gap-2">
-                        <select className="border border-gray-300 text-gray-600 text-sm rounded px-3 py-2 outline-none">
+                        <select className="border border-gray-300 dark:border-slate-700 text-gray-600 dark:text-gray-400 text-sm rounded px-3 py-2 outline-none">
                           <option>Toàn quốc</option>
                         </select>
                         <select
                           value={selectedTheater}
                           onChange={(e) => setSelectedTheater(e.target.value)}
-                          className="border border-gray-300 text-gray-600 text-sm rounded px-3 py-2 outline-none"
+                          className="border border-gray-300 dark:border-slate-700 text-gray-600 dark:text-gray-400 text-sm rounded px-3 py-2 outline-none"
                         >
                           {theaters.map(theater => (
                             <option key={theater} value={theater}>
@@ -570,7 +571,7 @@ export default function MovieDetail() {
                       <div className="space-y-6">
                         {Object.entries(showtimesByFormat).map(([format, shows]) => (
                           <div key={format} className="rounded-xl border border-gray-100 p-4 shadow-sm">
-                            <h4 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <h4 className="font-bold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
                               {format} Phụ đề
                             </h4>
                             <div className="flex flex-wrap gap-3">
@@ -578,10 +579,10 @@ export default function MovieDetail() {
                                 <Link
                                   key={showtime.id}
                                   to={`/seats/${movie.id}/${showtime.id}`}
-                                  className="group flex flex-col bg-gray-50 rounded px-4 py-2 hover:bg-orange-50 transition-colors text-center border border-gray-200"
+                                  className="group flex flex-col bg-gray-50 dark:bg-slate-800 rounded px-4 py-2 hover:bg-orange-50 transition-colors text-center border border-gray-200 dark:border-slate-700"
                                 >
-                                  <div className="font-semibold text-lg text-gray-900 group-hover:text-orange-500">{showtime.time}</div>
-                                  <div className="text-xs text-gray-500 mt-0.5">{showtime.price.toLocaleString('vi-VN')}đ</div>
+                                  <div className="font-semibold text-lg text-gray-900 dark:text-gray-100 group-hover:text-orange-500">{showtime.time}</div>
+                                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{showtime.price.toLocaleString('vi-VN')}đ</div>
                                 </Link>
                               ))}
                             </div>
@@ -589,8 +590,8 @@ export default function MovieDetail() {
                         ))}
                       </div>
                     ) : (
-                      <div className="text-center py-12 bg-gray-50 rounded-xl border border-gray-100">
-                        <p className="text-gray-500">Không có suất chiếu nào phù hợp trong ngày này</p>
+                      <div className="text-center py-12 bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-100">
+                        <p className="text-gray-500 dark:text-gray-400">Không có suất chiếu nào phù hợp trong ngày này</p>
                       </div>
                     )}
                   </div>
@@ -602,30 +603,30 @@ export default function MovieDetail() {
                     transition={{ delay: 0.5 }}
                     className="mb-16"
                   >
-                    <div className="bg-white rounded-2xl shadow-xl p-8">
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl p-8">
                       <div className="flex items-center justify-between mb-8">
                         <div className="flex items-center gap-3">
                           <MessageSquare className="w-6 h-6 text-red-600" />
-                          <h2 className="text-2xl font-bold text-gray-900">Đánh Giá Từ Khách Hàng</h2>
+                          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Đánh Giá Từ Khách Hàng</h2>
                         </div>
                         <div className="text-right">
                           <div className="text-3xl font-bold text-yellow-500">{reviewData.averageRating > 0 ? reviewData.averageRating.toFixed(1) : '-'} / 5</div>
-                          <p className="text-gray-700 text-sm">Dựa trên {reviewData.totalReviews} lượt đánh giá</p>
+                          <p className="text-gray-700 dark:text-gray-300 text-sm">Dựa trên {reviewData.totalReviews} lượt đánh giá</p>
                         </div>
                       </div>
 
                       {reviewData.reviews.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           {reviewData.reviews.map(review => (
-                            <div key={review.id} className="bg-gray-50 rounded-xl p-6 border border-gray-100">
+                            <div key={review.id} className="bg-gray-50 dark:bg-slate-800 rounded-xl p-6 border border-gray-100">
                               <div className="flex items-start justify-between mb-4">
                                 <div className="flex items-center gap-3">
                                   <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-orange-400 rounded-full flex items-center justify-center text-white font-bold text-lg">
                                     {review.userName.charAt(0).toUpperCase()}
                                   </div>
                                   <div>
-                                    <h4 className="font-bold text-gray-900">{review.userName}</h4>
-                                    <p className="text-xs text-gray-700">{new Date(review.createdAt).toLocaleDateString('vi-VN')}</p>
+                                    <h4 className="font-bold text-gray-900 dark:text-gray-100">{review.userName}</h4>
+                                    <p className="text-xs text-gray-700 dark:text-gray-300">{new Date(review.createdAt).toLocaleDateString('vi-VN')}</p>
                                   </div>
                                 </div>
                                 <div className="flex gap-1">
@@ -634,22 +635,22 @@ export default function MovieDetail() {
                                   ))}
                                 </div>
                               </div>
-                              <p className="text-gray-900 text-sm md:text-base leading-relaxed">
-                                {review.comment || <span className="italic text-gray-600">Không có nhận xét.</span>}
+                              <p className="text-gray-900 dark:text-gray-100 text-sm md:text-base leading-relaxed">
+                                {review.comment || <span className="italic text-gray-600 dark:text-gray-400">Không có nhận xét.</span>}
                               </p>
                             </div>
                           ))}
                         </div>
                       ) : (
-                        <div className="text-center py-12 bg-gray-50 rounded-xl border border-gray-100">
+                        <div className="text-center py-12 bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-100">
                           <Star className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                          <p className="text-gray-700 text-sm">Chưa có đánh giá nào cho bộ phim này.</p>
+                          <p className="text-gray-700 dark:text-gray-300 text-sm">Chưa có đánh giá nào cho bộ phim này.</p>
                         </div>
                       )}
                       
                       {/* FORM ĐÁNH GIÁ */}
                       <div className="mt-8 pt-8 border-t-2 border-gray-100">
-                        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
                           <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
                           {myExistingReview ? 'Đánh giá của bạn' : 'Viết đánh giá của bạn'}
                         </h3>
@@ -667,7 +668,7 @@ export default function MovieDetail() {
                         ) : (
                           <div className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-2xl border border-orange-100 p-6">
                             <div className="mb-5">
-                              <p className="text-sm font-semibold text-gray-700 mb-3">Chấm điểm <span className="text-red-600">*</span></p>
+                              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Chấm điểm <span className="text-red-600">*</span></p>
                               <div className="flex items-center gap-2">
                                 {[1, 2, 3, 4, 5].map(star => (
                                   <button key={star} onMouseEnter={() => setHoverRating(star)} onMouseLeave={() => setHoverRating(0)} onClick={() => setMyRating(star)} className="transition-transform hover:scale-125 focus:outline-none">
@@ -680,14 +681,14 @@ export default function MovieDetail() {
                               </div>
                             </div>
                             <div className="mb-4">
-                              <p className="text-sm font-semibold text-gray-700 mb-2">Nhận xét (tùy chọn)</p>
-                              <textarea value={myReviewComment} onChange={e => setMyReviewComment(e.target.value)} placeholder="Chia sẻ cảm nhận của bạn về bộ phim này..." rows={3} className="w-full bg-white border-2 border-orange-200 rounded-xl px-4 py-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent resize-none" />
+                              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Nhận xét (tùy chọn)</p>
+                              <textarea value={myReviewComment} onChange={e => setMyReviewComment(e.target.value)} placeholder="Chia sẻ cảm nhận của bạn về bộ phim này..." rows={3} className="w-full bg-white dark:bg-slate-900 border-2 border-orange-200 rounded-xl px-4 py-3 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent resize-none" />
                             </div>
                             <button onClick={handleSubmitReview} disabled={isSubmittingReview || myRating === 0} className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-white bg-gradient-to-r from-red-600 to-orange-500 hover:shadow-lg disabled:opacity-50 transition-all">
                               <Send className="w-4 h-4" />
                               {isSubmittingReview ? 'Đang gửi...' : myExistingReview ? 'Cập nhật đánh giá' : 'Gửi đánh giá'}
                             </button>
-                            {myExistingReview && <p className="text-xs text-gray-500 mt-2">* Gửi lại sẽ cập nhật đánh giá cũ của bạn.</p>}
+                            {myExistingReview && <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">* Gửi lại sẽ cập nhật đánh giá cũ của bạn.</p>}
                           </div>
                         )}
                       </div>
@@ -702,10 +703,10 @@ export default function MovieDetail() {
                     transition={{ delay: 0.6 }}
                     className="mb-16"
                   >
-                    <div className="bg-white rounded-2xl shadow-xl p-8">
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl p-8">
                       <div className="flex items-center gap-3 mb-8 border-b border-gray-100 pb-4">
                         <MessageSquare className="w-6 h-6 text-red-600" />
-                        <h2 className="text-2xl font-bold text-gray-900">Bình Luận &amp; Thảo Luận</h2>
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Bình Luận &amp; Thảo Luận</h2>
                       </div>
 
                       {/* Main Comment Box */}
@@ -721,7 +722,7 @@ export default function MovieDetail() {
                                 onChange={(e) => setNewComment(e.target.value)}
                                 placeholder="Tham gia thảo luận về bộ phim này..."
                                 rows={3}
-                                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
+                                className="w-full bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-3 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
                               />
                               <div className="flex justify-end mt-2">
                                 <button
@@ -750,22 +751,22 @@ export default function MovieDetail() {
                         {comments.length > 0 ? (
                           comments.map(comment => (
                             <div key={comment.id} className="flex gap-4">
-                              <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center text-gray-800 font-bold text-lg flex-shrink-0">
+                              <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center text-gray-800 dark:text-gray-200 font-bold text-lg flex-shrink-0">
                                 {comment.userName.charAt(0).toUpperCase()}
                               </div>
                               <div className="flex-1">
-                                <div className="bg-gray-50 rounded-2xl p-4 border border-gray-100">
+                                <div className="bg-gray-50 dark:bg-slate-800 rounded-2xl p-4 border border-gray-100">
                                   <div className="flex justify-between items-baseline mb-2">
-                                    <h4 className="font-bold text-gray-900">{comment.userName}</h4>
-                                    <span className="text-xs text-gray-700">{new Date(comment.createdAt).toLocaleString('vi-VN')}</span>
+                                    <h4 className="font-bold text-gray-900 dark:text-gray-100">{comment.userName}</h4>
+                                    <span className="text-xs text-gray-700 dark:text-gray-300">{new Date(comment.createdAt).toLocaleString('vi-VN')}</span>
                                   </div>
-                                  <p className="text-gray-900 leading-relaxed whitespace-pre-wrap">{comment.content}</p>
+                                  <p className="text-gray-900 dark:text-gray-100 leading-relaxed whitespace-pre-wrap">{comment.content}</p>
                                 </div>
 
                                 <div className="mt-2 ml-2">
                                   <button
                                     onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
-                                    className="text-xs font-semibold text-gray-700 hover:text-red-600 flex items-center gap-1 transition-colors"
+                                    className="text-xs font-semibold text-gray-700 dark:text-gray-300 hover:text-red-600 flex items-center gap-1 transition-colors"
                                   >
                                     <Reply className="w-3 h-3" />
                                     Trả lời
@@ -775,19 +776,19 @@ export default function MovieDetail() {
                                 {/* Reply Input Box */}
                                 {replyingTo === comment.id && currentUser && (
                                   <div className="mt-4 flex gap-3">
-                                    <CornerDownRight className="w-5 h-5 text-gray-600 mt-2" />
+                                    <CornerDownRight className="w-5 h-5 text-gray-600 dark:text-gray-400 mt-2" />
                                     <div className="flex-1">
                                       <textarea
                                         value={replyContent}
                                         onChange={(e) => setReplyContent(e.target.value)}
                                         placeholder={`Trả lời ${comment.userName}...`}
                                         rows={2}
-                                        className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 resize-none"
+                                        className="w-full bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-xl px-4 py-2 text-sm text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 resize-none"
                                       />
                                       <div className="flex justify-end mt-2 gap-2">
                                         <button
                                           onClick={() => setReplyingTo(null)}
-                                          className="px-4 py-1.5 rounded-lg font-semibold text-sm text-gray-700 hover:bg-gray-100"
+                                          className="px-4 py-1.5 rounded-lg font-semibold text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:bg-slate-800"
                                         >
                                           Hủy
                                         </button>
@@ -809,16 +810,16 @@ export default function MovieDetail() {
                                     {comment.replies.map(reply => (
                                       <div key={reply.id} className="flex gap-3 mt-4">
                                         <CornerDownRight className="w-5 h-5 text-gray-300 mt-2 flex-shrink-0" />
-                                        <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-800 font-bold text-sm flex-shrink-0">
+                                        <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-gray-800 dark:text-gray-200 font-bold text-sm flex-shrink-0">
                                           {reply.userName.charAt(0).toUpperCase()}
                                         </div>
                                         <div className="flex-1">
-                                          <div className="bg-gray-50 rounded-2xl p-3 border border-gray-100">
+                                          <div className="bg-gray-50 dark:bg-slate-800 rounded-2xl p-3 border border-gray-100">
                                             <div className="flex justify-between items-baseline mb-1">
-                                              <h4 className="font-bold text-sm text-gray-900">{reply.userName}</h4>
-                                              <span className="text-[10px] text-gray-700">{new Date(reply.createdAt).toLocaleString('vi-VN')}</span>
+                                              <h4 className="font-bold text-sm text-gray-900 dark:text-gray-100">{reply.userName}</h4>
+                                              <span className="text-[10px] text-gray-700 dark:text-gray-300">{new Date(reply.createdAt).toLocaleString('vi-VN')}</span>
                                             </div>
-                                            <p className="text-gray-900 text-sm leading-relaxed whitespace-pre-wrap">{reply.content}</p>
+                                            <p className="text-gray-900 dark:text-gray-100 text-sm leading-relaxed whitespace-pre-wrap">{reply.content}</p>
                                           </div>
                                         </div>
                                       </div>
@@ -829,7 +830,7 @@ export default function MovieDetail() {
                             </div>
                           ))
                         ) : (
-                          <div className="text-center py-8 text-gray-700">
+                          <div className="text-center py-8 text-gray-700 dark:text-gray-300">
                             Hãy là người đầu tiên bình luận về bộ phim này!
                           </div>
                         )}
@@ -840,7 +841,7 @@ export default function MovieDetail() {
 
                 {/* Right Sidebar - Phim Đang Chiếu */}
                 <div className="lg:col-span-4 mt-8 lg:mt-0">
-                  <h2 className="text-lg font-bold text-gray-900 mb-4 border-l-4 border-[#0056b3] pl-3 uppercase">Phim Đang Chiếu</h2>
+                  <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4 border-l-4 border-[#0056b3] pl-3 uppercase">Phim Đang Chiếu</h2>
                   <div className="flex flex-col gap-6">
                     {nowShowingMovies.map((nsMovie) => (
                       <div key={nsMovie.id} className="group cursor-pointer">
@@ -854,7 +855,7 @@ export default function MovieDetail() {
                               {nsMovie.ageRating}
                             </div>
                           </div>
-                          <h3 className="font-semibold text-gray-800 group-hover:text-[#0056b3] line-clamp-1">{nsMovie.title}</h3>
+                          <h3 className="font-semibold text-gray-800 dark:text-gray-200 group-hover:text-[#0056b3] line-clamp-1">{nsMovie.title}</h3>
                         </Link>
                       </div>
                     ))}
@@ -862,7 +863,7 @@ export default function MovieDetail() {
                 </div>
               </div> {/* End grid */}
             </div> {/* End container */}
-          </div> {/* End bg-white */}
+          </div> {/* End bg-white dark:bg-slate-900 */}
         </>
       )}
 

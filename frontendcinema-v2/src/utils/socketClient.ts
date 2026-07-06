@@ -45,7 +45,12 @@ class SocketService {
             if (this.client.connected) {
                 subscription = this.client.subscribe(topic, (message) => {
                     if (message.body) {
-                        callback(JSON.parse(message.body));
+                        try {
+                            callback(JSON.parse(message.body));
+                        } catch (e) {
+                            console.error('WebSocket: Không thể parse JSON từ message body:', message.body, e);
+                            callback(message.body);
+                        }
                     } else {
                         callback("got empty message");
                     }

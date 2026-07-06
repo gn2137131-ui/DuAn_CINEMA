@@ -37,7 +37,7 @@ public class SeatController {
     // API: Tự động tạo ghế cho một phòng (Admin gọi cái này sau khi tạo Room)
     @PostMapping("/generate/{roomId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<String> generateSeatsForRoom(@PathVariable Long roomId) {
+    public ResponseEntity<String> generateSeatsForRoom(@PathVariable("roomId") Long roomId) {
         Room room = roomRepository.findById(roomId).orElseThrow();
 
         char rowName = 'A';
@@ -58,14 +58,14 @@ public class SeatController {
 
     // Lấy danh sách ghế của một phòng để hiển thị sơ đồ
     @GetMapping("/room/{roomId}")
-    public List<Seat> getSeatsByRoom(@PathVariable Long roomId) {
+    public List<Seat> getSeatsByRoom(@PathVariable("roomId") Long roomId) {
         return seatRepository.findByRoomId(roomId);
     }
 
     // Trong SeatController.java
 
     @PutMapping("/update-row-vip")
-    public ResponseEntity<String> setRowAsVip(@RequestParam Long roomId, @RequestParam String rowName) {
+    public ResponseEntity<String> setRowAsVip(@RequestParam("roomId") Long roomId, @RequestParam("rowName") String rowName) {
         List<Seat> seats = seatRepository.findByRoomIdAndRowName(roomId, rowName);
 
         if (seats.isEmpty()) {
@@ -92,7 +92,7 @@ public class SeatController {
     // Cập nhật loại ghế cho 1 ghế riêng lẻ (NORMAL, VIP, COUPLE, BROKEN)
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> updateSeatType(@PathVariable Long id, @org.springframework.web.bind.annotation.RequestBody java.util.Map<String, String> payload) {
+    public ResponseEntity<?> updateSeatType(@PathVariable("id") Long id, @org.springframework.web.bind.annotation.RequestBody java.util.Map<String, String> payload) {
         return seatRepository.findById(id).map(seat -> {
             if (payload.containsKey("seatType")) {
                 seat.setSeatType(payload.get("seatType"));

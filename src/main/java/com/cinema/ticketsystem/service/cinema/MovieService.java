@@ -21,6 +21,7 @@ public class MovieService {
     private CloudinaryService cloudinaryService; 
 
     // 1. Lấy toàn bộ danh sách phim
+    @org.springframework.cache.annotation.Cacheable("movies")
     public List<Movie> getAllMovies() {
         return movieRepository.findAll();
     }
@@ -31,17 +32,23 @@ public class MovieService {
     }
 
     // 2. Thêm phim mới kèm xử lý upload poster lên Cloudinary
-    public Movie addMovie(Movie movie, MultipartFile file) throws IOException {
+    @org.springframework.cache.annotation.CacheEvict(value = "movies", allEntries = true)
+    public Movie addMovie(Movie movie, MultipartFile file, MultipartFile bannerFile) throws IOException {
         if (file != null && !file.isEmpty()) {
             // Gọi hàm uploadImage từ CloudinaryService của bạn để lấy chuỗi URL
             String imageUrl = cloudinaryService.uploadImage(file);
             movie.setPosterUrl(imageUrl); 
         }
+        if (bannerFile != null && !bannerFile.isEmpty()) {
+            String bannerUrl = cloudinaryService.uploadImage(bannerFile);
+            movie.setBannerUrl(bannerUrl); 
+        }
         return movieRepository.save(movie);
     }
 
     // 3. Cập nhật thông tin phim (Sửa phim)
-    public Movie updateMovie(Long id, Movie movieDetails, MultipartFile file) throws IOException {
+    @org.springframework.cache.annotation.CacheEvict(value = "movies", allEntries = true)
+    public Movie updateMovie(Long id, Movie movieDetails, MultipartFile file, MultipartFile bannerFile) throws IOException {
         Optional<Movie> optionalMovie = movieRepository.findById(id);
         
         if (optionalMovie.isPresent()) {
@@ -74,6 +81,10 @@ public class MovieService {
                 String imageUrl = cloudinaryService.uploadImage(file);
                 existingMovie.setPosterUrl(imageUrl);
             }
+            if (bannerFile != null && !bannerFile.isEmpty()) {
+                String bannerUrl = cloudinaryService.uploadImage(bannerFile);
+                existingMovie.setBannerUrl(bannerUrl);
+            }
 
             return movieRepository.save(existingMovie);
         } else {
@@ -82,6 +93,7 @@ public class MovieService {
     }
 
     // 4. Xóa phim
+    @org.springframework.cache.annotation.CacheEvict(value = "movies", allEntries = true)
     public void deleteMovie(Long id) {
         if (movieRepository.existsById(id)) {
             movieRepository.deleteById(id);
@@ -91,6 +103,7 @@ public class MovieService {
     }
 
     // 5. Lật trạng thái HOT của phim
+    @org.springframework.cache.annotation.CacheEvict(value = "movies", allEntries = true)
     public Movie toggleHotStatus(Long id) {
         Movie movie = movieRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Không tìm thấy phim với ID: " + id));

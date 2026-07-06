@@ -4,6 +4,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import java.security.Key;
 import com.cinema.ticketsystem.entity.user.User;
@@ -11,8 +12,12 @@ import java.util.Date;
 
 @Service
 public class JwtService {
-    // Chuỗi bí mật để ký Token (Bạn nên để chuỗi dài và phức tạp)
-    private static final String SECRET = "5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437";
+    // Fix #2: đọc secret từ application.properties — không hardcode trong source code
+    @Value("${jwt.secret}")
+    private String secret;
+
+    // Fix #13: TTL 2h thay vì 24h
+    private static final long TOKEN_TTL_MS = 1000L * 60 * 60 * 2;
 
     // Sửa lại hàm này
     public String generateToken(User user) {
@@ -26,13 +31,13 @@ public class JwtService {
                 .setClaims(claims) // Đưa quyền vào đây
                 .setSubject(user.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24))
+                .setExpiration(new Date(System.currentTimeMillis() + TOKEN_TTL_MS))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
     private Key getSignInKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(SECRET);
+        byte[] keyBytes = Decoders.BASE64.decode(secret);
         return Keys.hmacShaKeyFor(keyBytes);
     }
     // Thêm vào JwtService.java các hàm sau:

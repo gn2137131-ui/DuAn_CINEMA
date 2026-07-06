@@ -53,7 +53,7 @@ public class ShowtimeController {
     // 1. Lấy danh sách tất cả các suất chiếu ACTIVE (cho khách hàng)
     @GetMapping
     public ResponseEntity<List<Showtime>> getAllShowtimes(
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+            @RequestParam(name = "date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
 
         // Nếu có truyền ngày, ta xử lý lấy theo ngày, nếu không truyền (null) thì lấy
         // tất cả
@@ -70,8 +70,8 @@ public class ShowtimeController {
 
     @GetMapping("/filter")
     public List<Showtime> getShowtimesByFilter(
-            @RequestParam(required = false) Long movieId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+            @RequestParam(name = "movieId", required = false) Long movieId,
+            @RequestParam(name = "date", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         List<Showtime> results;
         if (movieId != null && date != null) {
             results = showtimeRepository.findByMovieIdAndShowDateAndStatus(movieId, date, ShowtimeStatus.ACTIVE);
@@ -88,14 +88,14 @@ public class ShowtimeController {
     // 1.2. Lấy suất chiếu theo ngày cụ thể
     @GetMapping("/daily")
     public List<Showtime> getShowtimesByDate(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+            @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         List<Showtime> results = showtimeRepository.findByShowDateAndStatus(date, ShowtimeStatus.ACTIVE);
         return filterValidShowtimes(results);
     }
 
     // 1.3. Lấy suất chiếu theo tuần (7 ngày từ ngày hiện tại)
     @GetMapping("/weekly")
-    public List<Showtime> getShowtimesWeekly(@RequestParam(required = false) Long movieId) {
+    public List<Showtime> getShowtimesWeekly(@RequestParam(name = "movieId", required = false) Long movieId) {
         LocalDate today = LocalDate.now();
         LocalDate endOfWeek = today.plusDays(6); // 6 ngày sau = 7 ngày tổng cộng
         List<Showtime> results = showtimeRepository.findShowtimesInWeek(movieId, today, endOfWeek);
@@ -114,9 +114,9 @@ public class ShowtimeController {
 
     // 1.4. Gợi ý khung giờ khả dụng cho phòng và ngày
     @GetMapping("/available")
-    public ResponseEntity<?> getAvailableShowtimeSlots(@RequestParam Long roomId,
-            @RequestParam String date,
-            @RequestParam int duration) {
+    public ResponseEntity<?> getAvailableShowtimeSlots(@RequestParam("roomId") Long roomId,
+            @RequestParam("date") String date,
+            @RequestParam("duration") int duration) {
         try {
             return ResponseEntity.ok(showtimeService.findAvailableSlots(roomId, date, duration));
         } catch (RuntimeException e) {
@@ -167,7 +167,7 @@ public class ShowtimeController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> updateShowtime(@PathVariable Long id, @RequestBody Showtime showtime) {
+    public ResponseEntity<?> updateShowtime(@PathVariable("id") Long id, @RequestBody Showtime showtime) {
         try {
             return ResponseEntity.ok(showtimeService.updateShowtime(id, showtime));
         } catch (RuntimeException e) {
@@ -177,7 +177,7 @@ public class ShowtimeController {
 
     // 3. Lấy sơ đồ ghế của một suất chiếu cụ thể
     @GetMapping("/{showtimeId}/seats")
-    public List<ShowtimeSeat> getSeatsByShowtime(@PathVariable Long showtimeId) {
+    public List<ShowtimeSeat> getSeatsByShowtime(@PathVariable("showtimeId") Long showtimeId) {
         return showtimeSeatRepository.findByShowtimeId(showtimeId);
     }
 
@@ -185,7 +185,7 @@ public class ShowtimeController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     @Transactional
-    public ResponseEntity<Void> deleteShowtime(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteShowtime(@PathVariable("id") Long id) {
         return showtimeRepository.findById(id).map(showtime -> {
             // Xóa bản đồ ghế liên quan trước
             showtimeSeatRepository.deleteAll(showtimeSeatRepository.findByShowtimeId(id));
@@ -198,7 +198,7 @@ public class ShowtimeController {
     // 5. Cập nhật trạng thái suất chiếu (Admin)
     @PutMapping("/{id}/status")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> updateShowtimeStatus(@PathVariable Long id, @RequestBody ShowtimeStatus newStatus) {
+    public ResponseEntity<?> updateShowtimeStatus(@PathVariable("id") Long id, @RequestBody ShowtimeStatus newStatus) {
         try {
             Showtime updated = showtimeService.updateShowtimeStatus(id, newStatus);
             return ResponseEntity.ok(updated);

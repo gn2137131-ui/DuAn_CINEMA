@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Award, Flame, Heart, Crown, Lock, Zap, ShieldAlert, Ghost, Trophy } from 'lucide-react';
 
 export type Badge = {
@@ -38,8 +38,9 @@ export default function AchievementsShowcase({ profile, bookings = [] }: { profi
         }
       }
 
-      if (showtime && showtime.startTime) {
-        const time = showtime.startTime;
+      const timeStr = showtime.start_time || showtime.startTime;
+      if (showtime && timeStr) {
+        const time = timeStr;
         let hour = 0;
         if (Array.isArray(time)) {
           hour = time[0];

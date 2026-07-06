@@ -1,11 +1,15 @@
+import { toast } from 'sonner';
 import React, { useState } from 'react';
 import { gameApi } from '../api/gameApi';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
-import { handleGameWin } from '../utils/gameUtils';
+import { handleGameWin, useGameCost } from '../utils/gameUtils';
+import { useNavigate } from 'react-router-dom';
 
 const ScratchCardGame: React.FC = () => {
+  const navigate = useNavigate();
+  const { cost, incrementPlayCount } = useGameCost('scratch-card');
   const [playing, setPlaying] = useState(false);
   const [scratched, setScratched] = useState(false);
   const [pointsWon, setPointsWon] = useState<number | null>(null);
@@ -14,6 +18,7 @@ const ScratchCardGame: React.FC = () => {
   const handleScratch = async () => {
     if (playing || scratched) return;
     setPlaying(true);
+    incrementPlayCount();
 
     try {
       const response = await gameApi.spinWheel();
@@ -29,7 +34,7 @@ const ScratchCardGame: React.FC = () => {
 
     } catch (error) {
       console.error(error);
-      alert("Có lỗi xảy ra hoặc chưa đăng nhập!");
+      toast.error("Có lỗi xảy ra hoặc chưa đăng nhập!");
       setPlaying(false);
     }
   };
@@ -41,9 +46,19 @@ const ScratchCardGame: React.FC = () => {
         <h1 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-slate-300 to-slate-500 mb-6 z-10 text-center">
           Cào Thẻ Trúng Thưởng
         </h1>
-        <p className="text-slate-300 mb-12 z-10 text-center max-w-lg px-4 text-lg">
+        <p className="text-slate-300 mb-6 z-10 text-center max-w-lg px-4 text-lg">
           Cào lớp giấy bạc mờ để xem bạn may mắn nhận được bao nhiêu điểm hôm nay!
         </p>
+
+        {cost > 0 && (
+          <div className="z-10 mb-6 bg-red-900/40 border border-red-500/30 py-2 px-4 rounded-xl text-red-200 font-bold text-center">
+            ⚠️ Lượt cào này tốn: <span className="text-white text-xl">{cost} CineCoins</span>
+          </div>
+        )}
+
+        <button onClick={() => navigate('/games')} className="z-10 mb-8 px-6 py-2 bg-white/10 hover:bg-white/20 rounded-full font-bold transition-colors">
+          THOÁT VÀO HUB
+        </button>
 
         <div className="relative z-10 mb-12">
           <div 
@@ -79,9 +94,17 @@ const ScratchCardGame: React.FC = () => {
             <div className="bg-white/10 backdrop-blur-md px-8 py-4 rounded-2xl border border-white/20 mb-6">
                <p className="text-2xl font-black text-yellow-400">{resultMsg}</p>
             </div>
-            <button onClick={() => { setScratched(false); setPointsWon(null); setResultMsg(null); }} className="px-6 py-3 bg-white text-slate-900 rounded-full font-bold uppercase hover:bg-slate-200">
-              Chơi Lần Nữa
-            </button>
+            <div className="flex gap-4">
+              <button 
+                onClick={() => navigate('/games')}
+                className="px-6 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-full font-bold uppercase tracking-wider transition-colors shadow-lg border border-gray-600"
+              >
+                THOÁT
+              </button>
+              <button onClick={() => { setScratched(false); setPointsWon(null); setResultMsg(null); }} className="px-6 py-3 bg-white text-slate-900 rounded-full font-bold uppercase hover:bg-slate-200 shadow-lg">
+                CHƠI TIẾP
+              </button>
+            </div>
           </div>
         )}
       </div>

@@ -1,10 +1,12 @@
 {
   "header": {
+    "home": "Trang Chủ",
     "movies": "Phim",
     "theaters": "Rạp",
     "promotions": "Khuyến Mãi",
-    "history": "Lịch Sử",
-    "membership": "Thành Viên",
+    "history": "Lịch Sử Đặt Vé",
+    "membership": "Thẻ Thành Viên",
+    "profile": "Trang Cá Nhân",
     "login": "Đăng Nhập",
     "logout": "Đăng Xuất",
     "language": "Ngôn Ngữ",

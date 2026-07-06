@@ -1,5 +1,5 @@
 import { JSX, useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, ChevronRight, CreditCard, Smartphone, Banknote, ShieldCheck } from 'lucide-react';
 
 interface PaymentMethodsProps {

@@ -3,24 +3,28 @@ package com.cinema.ticketsystem.entity.cinema;
 import java.time.LocalDateTime;
 import jakarta.persistence.*;
 import lombok.Data;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties; // 🌟 Thêm import này
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
+// Fix #11: tên bảng rõ ràng; Fix #12: unique constraint ngăn DB tạo 2 row trùng ghế-suất chiếu
+@Table(name = "showtime_seat", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"showtime_id", "seat_id"})
+})
 @Data
-// 🌟 THÊM DÒNG NÀY: Vô hiệu hóa lỗi ByteBuddyInterceptor cho thực thể Trạng thái ghế
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"}) 
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class ShowtimeSeat {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    // Fix #9: LAZY thay vì EAGER mặc định — tránh N+1 queries khi load danh sách ghế
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "showtime_id")
-    // 💡 Thêm dòng này để khi lấy ghế, nó không lặp ngược lại kéo theo toàn bộ thông tin suất chiếu đồ sộ
-    @JsonIgnoreProperties({"showtimes", "hibernateLazyInitializer", "handler"}) 
+    @JsonIgnoreProperties({"showtimes", "hibernateLazyInitializer", "handler"})
     private Showtime showtime;
 
-    @ManyToOne
+    // Fix #9: LAZY thay vì EAGER mặc định
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seat_id")
     private Seat seat;
 
@@ -29,7 +33,15 @@ public class ShowtimeSeat {
 
     private LocalDateTime holdTimestamp;
 
+    // ID của user đang giữ ghế (null nếu không có ai giữ)
+    @Column(name = "holding_user_id")
+    private Long holdingUserId;
+
+    // Optimistic Locking: ngăn 2 request đồng thời ghi đè nhau (Race Condition)
+    @Version
+    private Long version;
+
     public static final int STATUS_AVAILABLE = 1;
     public static final int STATUS_BOOKED = 2;
     public static final int STATUS_HOLDING = 3;
-}
+}

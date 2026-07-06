@@ -106,3 +106,23 @@ export const handleGameWin = (pointsWon: number, totalLoyaltyPoints: number) => 
     }
   }
 };
+import { useState } from 'react';
+
+export const useGameCost = (gameId: string) => {
+  const [playCount, setPlayCount] = useState(() => {
+    const saved = localStorage.getItem(`${gameId}_play_count`);
+    return saved ? parseInt(saved, 10) : 0;
+  });
+
+  const cost = playCount * 50;
+
+  const incrementPlayCount = () => {
+    setPlayCount((prev: number) => {
+      const newCount = prev + 1;
+      localStorage.setItem(`${gameId}_play_count`, newCount.toString());
+      return newCount;
+    });
+  };
+
+  return { playCount, cost, incrementPlayCount };
+};

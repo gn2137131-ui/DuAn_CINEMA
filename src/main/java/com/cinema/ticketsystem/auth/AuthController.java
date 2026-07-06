@@ -1,6 +1,7 @@
 package com.cinema.ticketsystem.auth;
 
 import com.cinema.ticketsystem.dto.LoginRequest;
+import com.cinema.ticketsystem.dto.RegisterRequest;
 import com.cinema.ticketsystem.entity.user.User;
 import com.cinema.ticketsystem.repository.user.UserRepository;
 import com.cinema.ticketsystem.service.jwt.AuthService;
@@ -20,14 +21,15 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
     @Autowired
     private AuthService authService;
-    
+
     @Autowired
     private UserRepository userRepository;
 
+    // Fix #1: nhận RegisterRequest DTO (không có trường role) thay vì User entity trực tiếp
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody User user) {
+    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
         try {
-            String token = authService.register(user);
+            String token = authService.register(request);
             return ResponseEntity.ok(Map.of(
                     "message", "Đăng ký thành công!",
                     "token", "Bearer " + token));

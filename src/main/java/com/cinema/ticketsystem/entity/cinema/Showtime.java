@@ -14,6 +14,7 @@ import lombok.ToString;
 import lombok.EqualsAndHashCode;
 
 @Entity
+@Table(name = "showtime") // Revert to original table name
 @Data
 // 🌟 THÊM DÒNG NÀY: Để bảo vệ chính lớp Showtime khi nó được gọi từ các API khác
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
@@ -28,10 +29,10 @@ public class Showtime {
     @JsonIgnoreProperties({"showtimes", "hibernateLazyInitializer", "handler"}) 
     private Movie movie;
 
-    @ManyToOne
+    // Fix #9: LAZY thay vì EAGER mặc định
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id", nullable = false)
-    // 🌟 THÊM DÒNG NÀY: Phòng trường hợp Room cũng đang bị Lazy Loading ở đâu đó
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    @JsonIgnoreProperties({"seats", "hibernateLazyInitializer", "handler"})
     private Room room;
 
     @Column(name = "show_date")

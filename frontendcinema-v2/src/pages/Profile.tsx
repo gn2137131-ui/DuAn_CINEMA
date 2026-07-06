@@ -1,3 +1,4 @@
+import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -169,7 +170,7 @@ export default function Profile() {
       }
     } catch (err: any) {
       console.error('Lỗi khi cập nhật profile:', err);
-      alert('Có lỗi xảy ra khi cập nhật thông tin. Vui lòng thử lại!');
+      toast.error('Có lỗi xảy ra khi cập nhật thông tin. Vui lòng thử lại!');
     } finally {
       setIsSubmitting(false);
     }
@@ -586,7 +587,7 @@ export default function Profile() {
         isOpen={showGame}
         onClose={() => setShowGame(false)}
         onWin={(coins) => {
-          alert(`Chúc mừng! Bạn nhận được ${coins} CineCoins!`);
+          toast.success(`Chúc mừng! Bạn nhận được ${coins} CineCoins!`);
           setShowGame(false);
         }}
       />

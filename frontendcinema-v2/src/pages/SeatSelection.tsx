@@ -1,6 +1,7 @@
+import { toast } from 'sonner';
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { ArrowLeft, User, X, Info, Loader2 } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -203,7 +204,7 @@ export default function SeatSelection() {
     const token = localStorage.getItem('token');
     
     if (!user || !token) {
-      alert('Vui lòng đăng nhập để chọn ghế!');
+      toast.error('Vui lòng đăng nhập để chọn ghế!');
       navigate('/login');
       return;
     }
@@ -212,7 +213,7 @@ export default function SeatSelection() {
     if (!currentSeat) return;
 
     if (currentSeat.status === 'taken') {
-      alert("Ghế này đã có người giữ hoặc mua rồi bạn ơi!");
+      toast.error("Ghế này đã có người giữ hoặc mua rồi bạn ơi!");
       return;
     }
 
@@ -236,7 +237,7 @@ export default function SeatSelection() {
     const token = localStorage.getItem('token');
     
     if (!user || !token) {
-      alert('Vui lòng đăng nhập để tiếp tục thanh toán!');
+      toast.error('Vui lòng đăng nhập để tiếp tục thanh toán!');
       navigate('/login');
       return;
     }
@@ -244,20 +245,25 @@ export default function SeatSelection() {
     if (selectedSeats.length > 0) {
       try {
         // Thực hiện gửi yêu cầu khoá ghế xuống backend khi người dùng thực sự bấm Tiếp Tục
-        for (const seat of selectedSeats) {
-          await axiosClient.put(`/showtime-seats/hold`, {
-            showtimeId: Number(showtimeId),
-            seatId: Number(seat.seatId),
-          });
-          socketService.sendMessage(`/app/seats/lock/${showtimeId}`, {
-            seatId: seat.id,
-            status: 'taken',
-            clientId: CLIENT_ID
-          });
-        }
+        // Gửi tất cả yêu cầu giữ ghế song song (parallel) thay vì tuần tự (sequential)
+        // để giảm latency từ O(n*RTT) xuống O(1*RTT)
+        await Promise.all(
+          selectedSeats.map((seat) =>
+            axiosClient.put(`/showtime-seats/hold`, {
+              showtimeId: Number(showtimeId),
+              seatId: Number(seat.seatId),
+            }).then(() => {
+              socketService.sendMessage(`/app/seats/lock/${showtimeId}`, {
+                seatId: seat.id,
+                status: 'taken',
+                clientId: CLIENT_ID
+              });
+            })
+          )
+        );
       } catch (err) {
         console.error('Lỗi khi gọi API giữ ghế:', err);
-        alert('Rất tiếc! Một hoặc nhiều ghế bạn chọn đã có người khác đặt. Vui lòng chọn lại!');
+        toast.error('Rất tiếc! Một hoặc nhiều ghế bạn chọn đã có người khác đặt. Vui lòng chọn lại!');
         return;
       }
 
@@ -274,18 +280,18 @@ export default function SeatSelection() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-orange-50 to-yellow-50 flex flex-col items-center justify-center gap-4">
+      <div className="min-h-screen bg-gradient-to-b from-orange-50 to-yellow-50 dark:from-slate-950 dark:to-slate-900 dark:text-white flex flex-col items-center justify-center gap-4">
         <Loader2 className="w-8 h-8 animate-spin text-red-600" />
-        <p className="text-gray-800 font-medium">Đang tải sơ đồ phòng chiếu và trạng thái ghế...</p>
+        <p className="text-gray-800 dark:text-gray-200 font-medium">Đang tải sơ đồ phòng chiếu và trạng thái ghế...</p>
       </div>
     );
   }
 
   if (error || !movie || !showtime) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-orange-50 to-yellow-50 flex flex-col items-center justify-center p-4 text-center">
+      <div className="min-h-screen bg-gradient-to-b from-orange-50 to-yellow-50 dark:from-slate-950 dark:to-slate-900 dark:text-white flex flex-col items-center justify-center p-4 text-center">
         <p className="text-red-600 font-bold text-xl mb-2">Không thể tải thông tin phòng và ghế</p>
-        <p className="text-gray-700 text-sm mb-6 bg-red-50 p-3 rounded font-mono border border-red-100 max-w-md break-all">
+        <p className="text-gray-700 dark:text-gray-300 text-sm mb-6 bg-red-50 p-3 rounded font-mono border border-red-100 max-w-md break-all">
           {error || "Lý do: Không tìm thấy dữ liệu Phim hoặc Suất chiếu tương ứng."}
         </p>
         <button
@@ -310,18 +316,18 @@ export default function SeatSelection() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-orange-50 to-yellow-50">
+    <div className="min-h-screen bg-gradient-to-b from-orange-50 to-yellow-50 dark:from-slate-950 dark:to-slate-900 dark:text-white">
       <Header />
       <div className="container mx-auto px-4 py-8">
         {/* Movie Info Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl shadow-lg p-6 mb-8"
+          className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg p-6 mb-8"
         >
           <button
             onClick={() => navigate(`/movies/${movieId}`)}
-            className="flex items-center gap-2 text-gray-800 hover:text-red-600 mb-4 transition-colors"
+            className="flex items-center gap-2 text-gray-800 dark:text-gray-200 hover:text-red-600 mb-4 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
             Quay lại
@@ -330,13 +336,13 @@ export default function SeatSelection() {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <h1 className="text-2xl font-bold mb-2">{movie.title}</h1>
-              <div className="flex flex-wrap gap-4 text-gray-800">
+              <div className="flex flex-wrap gap-4 text-gray-800 dark:text-gray-200">
                 <span className="bg-red-50 text-red-600 font-bold px-2 py-0.5 rounded text-sm">{movie.ageRating}</span>
                 <span>{showtime.theater}</span>
                 <span>•</span>
                 <span>{showtime.format}</span>
                 <span>•</span>
-                <span>{showtime.date} - <strong className="text-gray-900">{showtime.time}</strong></span>
+                <span>{showtime.date} - <strong className="text-gray-900 dark:text-gray-100">{showtime.time}</strong></span>
               </div>
             </div>
           </div>
@@ -350,21 +356,21 @@ export default function SeatSelection() {
             transition={{ delay: 0.2 }}
             className="lg:col-span-2"
           >
-            <div className="bg-white rounded-2xl shadow-lg p-8 overflow-x-auto">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg p-8 overflow-x-auto">
               {/* Screen */}
               <div className="mb-12 max-w-md mx-auto">
                 <div className="bg-gradient-to-b from-gray-700 to-gray-400 h-2.5 rounded-t-[100px] shadow-md mb-2"></div>
-                <p className="text-center text-gray-600 text-xs tracking-widest font-bold uppercase">Màn Hình Chiếu</p>
+                <p className="text-center text-gray-600 dark:text-gray-400 text-xs tracking-widest font-bold uppercase">Màn Hình Chiếu</p>
               </div>
 
               {/* Sơ đồ ghế */}
               <div className="space-y-3 mb-8 min-w-[450px]">
                 {Object.entries(seatsByRow).map(([row, rowSeats]) => (
                   <div key={row} className="flex items-center justify-center gap-2">
-                    <div className="w-8 text-center font-bold text-gray-600 mr-2">{row}</div>
+                    <div className="w-8 text-center font-bold text-gray-600 dark:text-gray-400 mr-2">{row}</div>
                     <div className="flex gap-2 justify-center">
                       {rowSeats.map((seat) => {
-                        let seatClass = "bg-slate-100 border border-slate-200 text-gray-900 hover:bg-slate-200 w-10";
+                        let seatClass = "bg-slate-100 border border-slate-200 text-gray-900 dark:text-gray-100 hover:bg-slate-200 w-10";
                         if (seat.type === 'vip') {
                           seatClass = "bg-amber-100 border border-amber-300 text-amber-800 hover:bg-amber-200 w-10";
                         } else if (seat.type === 'couple') {
@@ -376,7 +382,7 @@ export default function SeatSelection() {
                         if (seat.status === 'selected') {
                           seatClass = `${seat.type === 'couple' ? 'w-[84px]' : 'w-10'} bg-gradient-to-br from-red-600 to-orange-500 text-white border-transparent animate-pulse shadow-sm`;
                         } else if (seat.status === 'taken') {
-                          seatClass = `${seat.type === 'couple' ? 'w-[84px]' : 'w-10'} bg-gray-300 text-gray-600 border-transparent opacity-40 cursor-not-allowed`;
+                          seatClass = `${seat.type === 'couple' ? 'w-[84px]' : 'w-10'} bg-gray-300 text-gray-600 dark:text-gray-400 border-transparent opacity-40 cursor-not-allowed`;
                         }
 
                         return (
@@ -399,34 +405,29 @@ export default function SeatSelection() {
               <div className="flex flex-wrap justify-center gap-6 pt-6 border-t border-gray-100">
                 <div className="flex items-center gap-2">
                   <div className="w-6 h-6 bg-slate-100 border border-slate-200 rounded-md"></div>
-                  <span className="text-xs text-gray-800 font-medium">Thường</span>
+                  <span className="text-xs text-gray-800 dark:text-gray-200 font-medium">Thường</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-6 h-6 bg-purple-200 border border-purple-300 rounded-md"></div>
-                  <span className="text-xs text-gray-800 font-medium">Đặt trước</span>
+                  <span className="text-xs text-gray-800 dark:text-gray-200 font-medium">Đặt trước</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-6 h-6 bg-amber-200 border border-amber-300 rounded-md"></div>
-                  <span className="text-xs text-gray-800 font-medium">VIP</span>
+                  <span className="text-xs text-gray-800 dark:text-gray-200 font-medium">VIP</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-12 h-6 bg-pink-100 border border-pink-300 rounded-md"></div>
-                  <span className="text-xs text-gray-800 font-medium">Đôi (Couple)</span>
+                  <span className="text-xs text-gray-800 dark:text-gray-200 font-medium">Đôi (Couple)</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-6 h-6 bg-gradient-to-br from-red-600 to-orange-500 rounded-md"></div>
-                  <span className="text-xs text-gray-800 font-medium">Đang chọn</span>
+                  <span className="text-xs text-gray-800 dark:text-gray-200 font-medium">Đang chọn</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-6 h-6 bg-gray-300 opacity-40 rounded-md"></div>
-                  <span className="text-xs text-gray-800 font-medium">Đã đặt</span>
+                  <span className="text-xs text-gray-800 dark:text-gray-200 font-medium">Đã đặt</span>
                 </div>
               </div>
-
-              <details className="mt-4 p-3 bg-gray-50 border border-gray-100 rounded-md">
-                <summary className="cursor-pointer font-medium">Debug: Raw seats data</summary>
-                <pre className="text-xs text-gray-900 mt-2 whitespace-pre-wrap max-h-64 overflow-auto">{JSON.stringify(seats, null, 2)}</pre>
-              </details>
             </div>
           </motion.div>
 
@@ -437,13 +438,13 @@ export default function SeatSelection() {
             transition={{ delay: 0.3 }}
             className="lg:col-span-1"
           >
-            <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-24">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg p-6 sticky top-24">
               <h2 className="text-xl font-bold mb-4 border-b border-gray-100 pb-2">Thông Tin Đặt Vé</h2>
 
               {selectedSeats.length > 0 ? (
                 <div className="space-y-4">
                   <div>
-                    <p className="text-sm text-gray-700 mb-2 font-medium">Ghế bạn đã chọn:</p>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 mb-2 font-medium">Ghế bạn đã chọn:</p>
                     <div className="flex flex-wrap gap-2">
                       {selectedSeats.map(seat => (
                         <div
@@ -453,7 +454,7 @@ export default function SeatSelection() {
                           <span className="font-bold text-red-600">{seat.row}{seat.number}</span>
                           <button
                             onClick={() => toggleSeat(seat.id)}
-                            className="text-gray-600 hover:text-red-600 transition-colors"
+                            className="text-gray-600 dark:text-gray-400 hover:text-red-600 transition-colors"
                           >
                             <X className="w-4 h-4" />
                           </button>
@@ -465,17 +466,17 @@ export default function SeatSelection() {
                   <div className="border-t border-gray-100 pt-4 space-y-2 max-h-40 overflow-y-auto">
                     {selectedSeats.map(seat => (
                       <div key={seat.id} className="flex justify-between text-sm">
-                        <span className="text-gray-800 font-medium">
-                          Ghế {seat.row}{seat.number} <span className="text-xs text-gray-600">({seat.type.toUpperCase()})</span>
+                        <span className="text-gray-800 dark:text-gray-200 font-medium">
+                          Ghế {seat.row}{seat.number} <span className="text-xs text-gray-600 dark:text-gray-400">({seat.type.toUpperCase()})</span>
                         </span>
-                        <span className="font-semibold text-gray-800">{seat.price.toLocaleString('vi-VN')}đ</span>
+                        <span className="font-semibold text-gray-800 dark:text-gray-200">{seat.price.toLocaleString('vi-VN')}đ</span>
                       </div>
                     ))}
                   </div>
 
                   <div className="border-t border-gray-100 pt-4">
                     <div className="flex justify-between items-center mb-4">
-                      <span className="font-bold text-gray-900">Tổng cộng:</span>
+                      <span className="font-bold text-gray-900 dark:text-gray-100">Tổng cộng:</span>
                       <span className="font-black text-2xl text-red-600">
                         {totalPrice.toLocaleString('vi-VN')}đ
                       </span>
@@ -492,7 +493,7 @@ export default function SeatSelection() {
               ) : (
                 <div className="text-center py-12">
                   <User className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                  <p className="text-gray-600 text-sm font-medium">Vui lòng nhấp chọn ghế trên sơ đồ rạp để bắt đầu</p>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Vui lòng nhấp chọn ghế trên sơ đồ rạp để bắt đầu</p>
                 </div>
               )}
             </div>

@@ -4,17 +4,17 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import com.cinema.ticketsystem.dto.QrCodeResponse;
 import com.cinema.ticketsystem.entity.cinema.SePay;
 
 @Service
+@RequiredArgsConstructor
 public class PaymentService {
     
-    @Autowired
-    private SePay sePayConfig;
+    private final SePay sePayConfig;
 
     // Giả lập thanh toán MoMo/VNPay
     public boolean processPayment(double amount, String paymentMethod) {

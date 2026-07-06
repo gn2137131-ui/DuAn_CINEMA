@@ -1,10 +1,12 @@
 {
   "header": {
+    "home": "Home",
     "movies": "Movies",
     "theaters": "Theaters",
     "promotions": "Promotions",
-    "history": "History",
+    "history": "Booking History",
     "membership": "Membership",
+    "profile": "Profile",
     "login": "Login",
     "logout": "Logout",
     "language": "Language",

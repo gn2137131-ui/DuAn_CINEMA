@@ -1,11 +1,13 @@
+import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import MovieCard from '../components/MovieCard';
-import { Popcorn, Ticket, Gift, Search, Filter, X, Star, TrendingUp } from 'lucide-react';
+import { Popcorn, Ticket, Gift, Search, Filter, X, Star, TrendingUp, Clock, Monitor } from 'lucide-react';
 import { Movie } from '../types/Movie';
+import { Link } from 'react-router-dom';
 const BACKEND_IMAGE_URL = import.meta.env.VITE_BACKEND_URL || '';
 import Banner from '../components/Banner';
 export default function Home() {
@@ -19,6 +21,33 @@ export default function Home() {
 
   const [bannerMovies, setBannerMovies] = useState<Movie[]>([]);
   const [promotions, setPromotions] = useState<any[]>([]);
+  const [todayShowtimes, setTodayShowtimes] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchTodayShowtimes = async () => {
+      try {
+        const today = new Date().toISOString().split('T')[0];
+        const res = await fetch(`${BACKEND_IMAGE_URL}/api/showtimes/daily?date=${today}`);
+        const data = await res.json();
+        setTodayShowtimes(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error('Failed to fetch today showtimes:', err);
+      }
+    };
+    fetchTodayShowtimes();
+  }, []);
+
+  const showtimesByMovie = Object.values(todayShowtimes.reduce((acc: any, st: any) => {
+    const movieId = st.movie.id;
+    if (!acc[movieId]) {
+      acc[movieId] = {
+        movie: st.movie,
+        showtimes: []
+      };
+    }
+    acc[movieId].showtimes.push(st);
+    return acc;
+  }, {}));
 
   // Fetch movies with proper poster URLs, banner, and status
   useEffect(() => {
@@ -28,12 +57,13 @@ export default function Home() {
         const formatted = data.map(m => {
           const rawPoster = m.posterUrl || m.poster_url || m.poster || '';
           const poster = rawPoster && !rawPoster.startsWith('http') ? `${BACKEND_IMAGE_URL}${rawPoster}` : rawPoster;
-          const banner = m.bannerUrl || m.banner_url || poster;
           const releaseStr = m.release_date || m.releaseDate || '';
           const releaseDate = new Date(releaseStr);
           const now = new Date();
           const status = releaseDate > now ? 'comingSoon' : 'nowShowing';
           const ageRating = m.ageRestriction || m.age_restriction || m.ageRating || 'P';
+          const rawBanner = m.bannerUrl || m.banner_url || m.banner || '';
+          const banner = rawBanner && !rawBanner.startsWith('http') ? `${BACKEND_IMAGE_URL}${rawBanner}` : rawBanner;
           return { ...m, poster, banner, status, ageRating } as Movie;
         });
         setMovies(formatted);
@@ -54,8 +84,9 @@ export default function Home() {
           const formatted = data.map(m => {
             const rawPoster = m.posterUrl || m.poster_url || m.poster || '';
             const poster = rawPoster && !rawPoster.startsWith('http') ? `${BACKEND_IMAGE_URL}${rawPoster}` : rawPoster;
-            const banner = m.bannerUrl || m.banner_url || poster;
             const ageRating = m.ageRestriction || m.age_restriction || m.ageRating || 'P';
+            const rawBanner = m.bannerUrl || m.banner_url || m.banner || '';
+            const banner = rawBanner && !rawBanner.startsWith('http') ? `${BACKEND_IMAGE_URL}${rawBanner}` : rawBanner;
             return { ...m, poster, banner, ageRating, status: 'nowShowing' } as Movie;
           });
           setBannerMovies(formatted);
@@ -135,9 +166,78 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 to-yellow-50 dark:from-[#0a0a0a] dark:to-[#111111]">
       <Header />
-
       {/* Hero Banner */}
       {featuredMovies.length > 0 && <Banner movies={featuredMovies} />}
+
+
+      {/* Hôm nay có suất chiếu phim gì */}
+      {showtimesByMovie.length > 0 && (
+        <section className="py-12 bg-white dark:bg-[#111111] border-b border-gray-200 dark:border-gray-800">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center">
+                <Ticket className="w-6 h-6 text-white" />
+              </div>
+              <h2 className="text-3xl font-black text-gray-900 dark:text-white uppercase tracking-tight">
+                Suất Chiếu Hôm Nay
+              </h2>
+            </div>
+
+            <div className="flex flex-col gap-6">
+              {showtimesByMovie.map((item: any) => {
+                const rawPoster = item.movie.posterUrl || item.movie.poster_url || item.movie.poster || '';
+                const poster = rawPoster && !rawPoster.startsWith('http') ? `${BACKEND_IMAGE_URL}${rawPoster}` : rawPoster;
+
+                return (
+                  <div key={item.movie.id} className="bg-gray-50 dark:bg-[#1a1a1a] p-4 rounded-2xl flex flex-col md:flex-row gap-6 border border-gray-100 dark:border-gray-800 hover:border-red-500/50 transition-colors">
+                    {/* Movie Info */}
+                    <Link to={`/movies/${item.movie.id}`} className="flex gap-4 md:w-1/3 flex-shrink-0 group">
+                      <div className="w-24 h-36 rounded-xl overflow-hidden shadow-md flex-shrink-0">
+                        <ImageWithFallback src={poster} alt={item.movie.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                      </div>
+                      <div className="flex flex-col py-1">
+                        <h3 className="font-bold text-lg text-gray-900 dark:text-white line-clamp-2 group-hover:text-red-500 transition-colors">{item.movie.title}</h3>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          <span className="text-xs bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-2 py-1 rounded-md font-semibold">{item.movie.genre || 'Hành động'}</span>
+                          <span className="text-xs bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 px-2 py-1 rounded-md font-bold border border-red-200 dark:border-red-800/50">
+                            {item.movie.ageRestriction || item.movie.age_restriction || item.movie.ageRating || 'P'}
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+
+                    {/* Showtimes */}
+                    <div className="flex-1 border-t md:border-t-0 md:border-l border-gray-200 dark:border-gray-800 pt-4 md:pt-0 md:pl-6">
+                      <h4 className="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-3 flex items-center gap-2">
+                        <Monitor className="w-4 h-4" /> 2D Phụ Đề Việt
+                      </h4>
+                      <div className="flex flex-wrap gap-3">
+                        {item.showtimes.map((st: any) => {
+                          const time = (st.start_time || st.startTime || '').substring(0, 5);
+                          return (
+                            <Link
+                              key={st.id}
+                              to={`/seats/${item.movie.id}/${st.id}`}
+                              className="bg-white dark:bg-[#222222] border border-gray-200 dark:border-gray-700 hover:border-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 px-4 py-2.5 rounded-xl transition-all group/time"
+                            >
+                              <div className="font-bold text-lg text-gray-900 dark:text-white group-hover/time:text-red-600 dark:group-hover/time:text-red-400 flex items-center justify-center">
+                                {time}
+                              </div>
+                              <div className="text-[10px] text-gray-500 dark:text-gray-400 text-center uppercase font-medium mt-0.5">
+                                {st.room.name}
+                              </div>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Features */}
       <section className="py-12 bg-white dark:bg-[#0a0a0a]">
@@ -190,62 +290,8 @@ export default function Home() {
                     className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-500 focus:outline-none transition-colors"
                   />
                 </div>
-                <button
-                  onClick={() => setShowFilters(!showFilters)}
-                  className={`px-6 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 ${showFilters ? 'bg-gradient-to-r from-red-600 to-orange-500 text-white' : 'bg-white dark:bg-gray-900 border-2 border-gray-200 dark:border-gray-800 text-gray-700 dark:text-gray-300 hover:border-orange-300'}`}
-                >
-                  <Filter className="w-5 h-5" />
-                  Lọc
-                </button>
               </div>
             </div>
-
-            {/* Filter Panel */}
-            {showFilters && (
-              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="bg-white rounded-2xl shadow-lg p-6 mb-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-bold text-lg">Bộ lọc</h3>
-                  <button onClick={clearFilters} className="text-sm text-red-600 hover:text-red-700 font-semibold flex items-center gap-1">
-                    <X className="w-4 h-4" />
-                    Xóa bộ lọc
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Genre Filter */}
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-3">Thể loại</label>
-                    <div className="flex flex-wrap gap-2">
-                      {genres.map(genre => (
-                        <button
-                          key={genre}
-                          onClick={() => setSelectedGenre(genre)}
-                          className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${selectedGenre === genre ? 'bg-gradient-to-r from-red-600 to-orange-500 text-white shadow-lg' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
-                        >
-                          {genre === 'all' ? 'Tất cả' : genre}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Age Rating Filter */}
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-3">Độ tuổi</label>
-                    <div className="flex flex-wrap gap-2">
-                      {ageRatings.map(rating => (
-                        <button
-                          key={rating}
-                          onClick={() => setSelectedAgeRating(rating)}
-                          className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${selectedAgeRating === rating ? 'bg-gradient-to-r from-red-600 to-orange-500 text-white shadow-lg' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
-                        >
-                          {rating === 'all' ? 'Tất cả' : rating}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            )}
 
             {/* Movies Grid */}
             {loading ? (
@@ -340,7 +386,10 @@ export default function Home() {
                           {promo.code}
                         </div>
                         <button
-                          onClick={() => alert(`Đã copy mã: ${promo.code}`)}
+                          onClick={() => {
+                            navigator.clipboard.writeText(promo.code);
+                            toast.success(`Đã copy mã: ${promo.code}`);
+                          }}
                           className="text-sm font-semibold text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 bg-red-50 dark:bg-red-900/30 px-3 py-2 rounded-lg transition-colors"
                         >
                           Copy mã
@@ -488,7 +537,7 @@ export default function Home() {
                 image: 'https://images.unsplash.com/photo-1616530940355-351fabd9524b?q=80&w=800&auto=format&fit=crop'
               }
             ].map((exp, index) => (
-              <motion.div 
+              <motion.div
                 key={exp.id}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -498,13 +547,13 @@ export default function Home() {
               >
                 {/* Background Image */}
                 <div className="absolute inset-0">
-                  <img 
-                    src={exp.image} 
-                    alt={exp.title} 
+                  <img
+                    src={exp.image}
+                    alt={exp.title}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
                 </div>
-                
+
                 {/* Overlays */}
                 <div className="absolute inset-0 bg-black/60 group-hover:bg-black/30 transition-colors duration-500" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
@@ -517,7 +566,7 @@ export default function Home() {
                   <p className="text-gray-300 text-base md:text-lg leading-relaxed opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-500 delay-100">
                     {exp.desc}
                   </p>
-                  
+
                   {/* Explore Button */}
                   <div className="mt-6 overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-200">
                     <span className="inline-flex items-center gap-2 text-red-500 font-bold text-sm tracking-widest uppercase">

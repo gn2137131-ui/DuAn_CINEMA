@@ -1,11 +1,15 @@
+import { toast } from 'sonner';
 import React, { useState, useEffect } from 'react';
 import { gameApi } from '../api/gameApi';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
-import { handleGameWin } from '../utils/gameUtils';
+import { handleGameWin, useGameCost } from '../utils/gameUtils';
+import { useNavigate } from 'react-router-dom';
 
 const SlotMachineGame: React.FC = () => {
+  const navigate = useNavigate();
+  const { cost, incrementPlayCount } = useGameCost('slot-machine');
   const [playing, setPlaying] = useState(false);
   const [pointsWon, setPointsWon] = useState<number | null>(null);
   const [resultMsg, setResultMsg] = useState<string | null>(null);
@@ -29,6 +33,7 @@ const SlotMachineGame: React.FC = () => {
     setPlaying(true);
     setPointsWon(null);
     setResultMsg(null);
+    incrementPlayCount();
 
     try {
       const response = await gameApi.spinWheel();
@@ -44,7 +49,7 @@ const SlotMachineGame: React.FC = () => {
 
     } catch (error) {
       console.error(error);
-      alert("Có lỗi xảy ra hoặc chưa đăng nhập!");
+      toast.error("Có lỗi xảy ra hoặc chưa đăng nhập!");
       setPlaying(false);
     }
   };
@@ -56,9 +61,19 @@ const SlotMachineGame: React.FC = () => {
         <h1 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-500 mb-6 z-10 text-center">
           Máy Đánh Bạc
         </h1>
-        <p className="text-slate-300 mb-12 z-10 text-center max-w-lg px-4 text-lg">
+        <p className="text-slate-300 mb-6 z-10 text-center max-w-lg px-4 text-lg">
           Gạt cần máy cuộn số để thử vận may nhận hàng trăm điểm thưởng!
         </p>
+
+        {cost > 0 && (
+          <div className="z-10 mb-6 bg-green-900/40 border border-green-500/30 py-2 px-4 rounded-xl text-green-200 font-bold text-center">
+            ⚠️ Lượt gạt này tốn: <span className="text-white text-xl">{cost} CineCoins</span>
+          </div>
+        )}
+
+        <button onClick={() => navigate('/games')} className="z-10 mb-8 px-6 py-2 bg-white/10 hover:bg-white/20 rounded-full font-bold transition-colors">
+          THOÁT VÀO HUB
+        </button>
 
         <div className="flex flex-col items-center z-10 mb-12">
           
@@ -90,9 +105,12 @@ const SlotMachineGame: React.FC = () => {
           <button 
             onClick={handlePullLever}
             disabled={playing}
-            className="mt-12 px-10 py-4 bg-gradient-to-r from-emerald-500 to-green-600 rounded-full font-black text-xl text-white shadow-xl hover:scale-105 active:scale-95 disabled:opacity-50 transition-all uppercase tracking-widest border-2 border-emerald-400"
+            className="mt-12 px-10 py-4 bg-gradient-to-r from-emerald-500 to-green-600 rounded-full font-black text-xl text-white shadow-xl hover:scale-105 active:scale-95 disabled:opacity-50 transition-all tracking-widest border-2 border-emerald-400 flex flex-col items-center"
           >
-            {playing ? 'Đang Cuộn...' : 'Gạt Cần Ngay'}
+            <span>{playing ? 'ĐANG CUỘN...' : 'GẠT CẦN NGAY'}</span>
+            {!playing && (
+              cost === 0 ? <span className="text-[10px]">MIỄN PHÍ</span> : <span className="text-[10px]">-{cost} XU</span>
+            )}
           </button>
 
         </div>
@@ -101,6 +119,17 @@ const SlotMachineGame: React.FC = () => {
           <div className="flex flex-col items-center z-10 animate-fade-in-up">
             <div className="bg-emerald-900/50 backdrop-blur-md px-8 py-4 rounded-2xl border border-emerald-500 mb-6">
                <p className="text-2xl font-black text-emerald-400">{resultMsg}</p>
+            </div>
+            <div className="flex gap-4">
+              <button 
+                onClick={() => navigate('/games')}
+                className="px-6 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-full font-bold uppercase tracking-wider transition-colors shadow-lg border border-gray-600"
+              >
+                THOÁT
+              </button>
+              <button onClick={() => setResultMsg(null)} className="px-6 py-3 bg-white text-slate-900 rounded-full font-bold uppercase hover:bg-slate-200 shadow-lg">
+                CHƠI TIẾP
+              </button>
             </div>
           </div>
         )}

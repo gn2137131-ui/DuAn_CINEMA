@@ -1,9 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* =====================================================
    CINEADMIN — DARK MODE DESIGN SYSTEM
    Phong cách: Cinema Dashboard Premium
    ===================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 :root {
   /* === DARK PALETTE === */
@@ -393,10 +397,40 @@ select.form-control { cursor: pointer; }
 .poster-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: rgba(99,131,185,0.3); }
 
 /* ===== HOVER OVERLAY ===== */
+.hover-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(4px);
+  z-index: 20;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
 .card:hover .hover-overlay,
 .poster-card:hover .hover-overlay {
   opacity: 1 !important;
 }
+
+/* ===== ACTION BUTTONS (HOVER OVERLAY) ===== */
+.action-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.action-btn:hover {
+  transform: translateY(-3px) scale(1.05);
+  color: white;
+}
+.action-btn.play:hover { background: #ef4444; border-color: #ef4444; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4); }
+.action-btn.hot:hover { background: #f59e0b; border-color: #f59e0b; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4); }
+.action-btn.hot.active { background: rgba(245, 158, 11, 0.9); border-color: #f59e0b; color: white; }
+.action-btn.schedule:hover { background: #10b981; border-color: #10b981; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4); }
+.action-btn.view:hover { background: #3b82f6; border-color: #3b82f6; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4); }
+.action-btn.edit:hover { background: var(--accent-primary); border-color: var(--accent-primary); box-shadow: 0 4px 12px rgba(99, 131, 185, 0.4); }
+.action-btn.delete:hover { background: #ef4444; border-color: #ef4444; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4); }
 
 /* ===== LEGACY OVERRIDES: force dark bg in all inline-style pages ===== */
 [style*="background: #f8fafc"],

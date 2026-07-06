@@ -35,12 +35,10 @@ public class WebhookController {
     public ResponseEntity<?> handleSePayWebhook(@RequestBody SePayWebhookRequest payload,
             @RequestHeader(value = "X-SEPAY-KEY", required = false) String sepayKey) {
         try {
-            // 1. Kiểm tra bảo mật Key
+            // 1. Kiểm tra bảo mật Key — fail closed: không có key hoặc sai key → từ chối ngay
             if (sePayConfig.getKey() != null && !sePayConfig.getKey().isBlank()) {
-                if (sepayKey == null) {
-                    System.out.println("CẢNH BÁO: Webhook gọi đến không có X-SEPAY-KEY. Đang cho phép vượt qua để TEST...");
-                } else if (!sePayConfig.getKey().equals(sepayKey)) {
-                    System.out.println("LỖI: X-SEPAY-KEY không khớp!");
+                if (sepayKey == null || !sePayConfig.getKey().equals(sepayKey)) {
+                    System.out.println("LỖI BẢO MẬT: Webhook bị từ chối — X-SEPAY-KEY thiếu hoặc không hợp lệ.");
                     return ResponseEntity.status(403)
                             .body(Map.of("success", false, "message", "Secret key không hợp lệ."));
                 }

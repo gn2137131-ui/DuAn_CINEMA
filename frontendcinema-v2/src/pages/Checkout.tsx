@@ -1,6 +1,7 @@
+import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { ArrowLeft, CreditCard, Smartphone, Wallet, ShoppingBag, Plus, Minus, Tag, CheckCircle, XCircle, Loader2, Clock } from 'lucide-react';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import Header from '../components/Header';
@@ -22,7 +23,7 @@ interface DiscountCode {
   id: number;
   code: string;
   description: string;
-  type: 'PERCENT' | 'FIXED';
+  type: 'PERCENTAGE' | 'FIXED';
   value: number;
   expirationDate?: string;
   maxUsage?: number;
@@ -48,15 +49,23 @@ export default function Checkout() {
   const [timeLeft, setTimeLeft] = useState(10 * 60); // 10 minutes
 
   useEffect(() => {
-    if (timeLeft <= 0) {
-      alert('Đã hết thời gian giữ ghế. Giao dịch bị hủy!');
-      navigate('/');
-      return;
-    }
     const timer = setInterval(() => {
-      setTimeLeft(prev => prev - 1);
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
     }, 1000);
     return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    if (timeLeft === 0) {
+      toast.error('Đã hết thời gian giữ ghế. Giao dịch bị hủy!');
+      navigate('/');
+    }
   }, [timeLeft, navigate]);
 
   const formatTime = (seconds: number) => {
@@ -69,7 +78,7 @@ export default function Checkout() {
     const user = localStorage.getItem('user');
     const token = localStorage.getItem('token');
     if (!user || !token) {
-      alert('Vui lòng đăng nhập để tiếp tục thanh toán!');
+      toast.error('Vui lòng đăng nhập để tiếp tục thanh toán!');
       navigate('/login');
     }
   }, [navigate]);
@@ -217,7 +226,7 @@ export default function Checkout() {
 
   if (!movie || !showtime || !seats) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-orange-50 to-yellow-50">
+      <div className="min-h-screen bg-gradient-to-b from-orange-50 to-yellow-50 dark:from-slate-950 dark:to-slate-900 dark:text-white">
         <Header />
         <div className="container mx-auto px-4 py-20 text-center">
           <h1 className="text-2xl font-bold">Không có thông tin đặt vé</h1>
@@ -253,7 +262,7 @@ export default function Checkout() {
 
   let discount = 0;
   if (appliedVoucher) {
-    if (appliedVoucher.type.toUpperCase() === 'PERCENT') {
+    if (appliedVoucher.type.toUpperCase() === 'PERCENTAGE' || appliedVoucher.type.toUpperCase() === 'PERCENT') {
       discount = (subtotal * appliedVoucher.value) / 100;
     } else {
       discount = appliedVoucher.value;
@@ -383,20 +392,20 @@ export default function Checkout() {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-orange-50 to-yellow-50">
+    <div className="min-h-screen bg-gradient-to-b from-orange-50 to-yellow-50 dark:from-slate-950 dark:to-slate-900 dark:text-white">
       <Header />
       <div className="container mx-auto px-4 py-8">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6 flex justify-between items-center">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-gray-600 hover:text-red-600 transition-colors font-bold"
+            className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-red-600 transition-colors font-bold"
           >
             <ArrowLeft className="w-5 h-5" />
             Quay lại
           </button>
           
-          <div className="bg-white px-4 py-2 rounded-xl shadow-sm border-2 border-orange-100 flex items-center gap-3">
-            <span className="text-gray-600 font-semibold text-sm hidden sm:inline">Thời gian giữ ghế:</span>
+          <div className="bg-white dark:bg-slate-900 px-4 py-2 rounded-xl shadow-sm border-2 border-orange-100 flex items-center gap-3">
+            <span className="text-gray-600 dark:text-gray-400 font-semibold text-sm hidden sm:inline">Thời gian giữ ghế:</span>
             <div className={`font-mono text-xl font-bold flex items-center gap-1 ${timeLeft < 180 ? 'text-red-600 animate-pulse' : 'text-orange-600'}`}>
               <Clock className="w-5 h-5" />
               {formatTime(timeLeft)}
@@ -409,36 +418,36 @@ export default function Checkout() {
           <div className="lg:col-span-2 space-y-6">
 
             {/* THÔNG TIN KHÁCH HÀNG */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white rounded-2xl shadow-lg p-6">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg p-6">
               <h2 className="text-xl font-bold mb-4">Thông Tin Khách Hàng</h2>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Họ và tên *</label>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Họ và tên *</label>
                   <input
                     type="text"
                     value={customerInfo.name}
                     onChange={(e) => setCustomerInfo(prev => ({ ...prev, name: e.target.value }))}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-500 focus:outline-none transition-colors"
+                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-slate-700 rounded-xl focus:border-red-500 focus:outline-none transition-colors"
                     placeholder="Nhập họ và tên"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Email *</label>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Email *</label>
                   <input
                     type="email"
                     value={customerInfo.email}
                     onChange={(e) => setCustomerInfo(prev => ({ ...prev, email: e.target.value }))}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-500 focus:outline-none transition-colors"
+                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-slate-700 rounded-xl focus:border-red-500 focus:outline-none transition-colors"
                     placeholder="Nhập email"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Số điện thoại *</label>
+                  <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Số điện thoại *</label>
                   <input
                     type="tel"
                     value={customerInfo.phone}
                     onChange={(e) => setCustomerInfo(prev => ({ ...prev, phone: e.target.value }))}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-500 focus:outline-none transition-colors"
+                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-slate-700 rounded-xl focus:border-red-500 focus:outline-none transition-colors"
                     placeholder="Nhập số điện thoại"
                   />
                 </div>
@@ -446,7 +455,7 @@ export default function Checkout() {
             </motion.div>
 
             {/* CHỌN ĐỒ ĂN */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-white rounded-2xl shadow-lg p-6">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg p-6">
               <div className="flex items-center gap-3 mb-4">
                 <ShoppingBag className="w-6 h-6 text-red-600" />
                 <h2 className="text-xl font-bold">Chọn Đồ Ăn & Nước Uống</h2>
@@ -464,7 +473,7 @@ export default function Checkout() {
                     onClick={() => setSelectedCategory(cat.value as any)}
                     className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${selectedCategory === cat.value
                       ? 'bg-gradient-to-r from-red-600 to-orange-500 text-white shadow-lg'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      : 'bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200'
                       }`}
                   >
                     {cat.label}
@@ -474,18 +483,18 @@ export default function Checkout() {
 
               <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
                 {isSnacksLoading ? (
-                  <div className="flex flex-col items-center justify-center py-12 gap-3 text-gray-500">
+                  <div className="flex flex-col items-center justify-center py-12 gap-3 text-gray-500 dark:text-gray-400">
                     <Loader2 className="w-8 h-8 animate-spin text-red-500" />
                     <p className="text-sm font-medium">Đang tải thực đơn rạp...</p>
                   </div>
                 ) : filteredCombos.length === 0 ? (
-                  <div className="text-center py-12 text-gray-500">Không tìm thấy sản phẩm phù hợp.</div>
+                  <div className="text-center py-12 text-gray-500 dark:text-gray-400">Không tìm thấy sản phẩm phù hợp.</div>
                 ) : (
                   filteredCombos.map(item => {
                     const itemKey = `${item.category}-${item.id}`;
                     return (
                       // SỬA CẤU TRÚC FLEX BỌC NGOÀI
-                      <div key={itemKey} className="flex flex-col sm:flex-row gap-3 sm:gap-4 p-4 border-2 border-gray-200 rounded-xl hover:border-orange-300 transition-colors">
+                      <div key={itemKey} className="flex flex-col sm:flex-row gap-3 sm:gap-4 p-4 border-2 border-gray-200 dark:border-slate-700 rounded-xl hover:border-orange-300 transition-colors">
 
                         {/* Nhóm Ảnh và Chữ (Luôn nằm ngang) */}
                         <div className="flex gap-3 sm:gap-4 flex-1 min-w-0">
@@ -493,7 +502,7 @@ export default function Checkout() {
                           <div className="flex-1 min-w-0 flex flex-col justify-center">
                             <h3 className="font-bold text-base sm:text-lg leading-tight">{item.name}</h3>
                             {/* Dùng line-clamp-2 thay vì truncate-2-lines để CSS chuẩn Tailwind */}
-                            <p className="text-xs sm:text-sm text-gray-600 mt-1 mb-2 line-clamp-2">{item.description}</p>
+                            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1 mb-2 line-clamp-2">{item.description}</p>
                             <p className="font-semibold text-red-600">{item.price.toLocaleString('vi-VN')}đ</p>
                           </div>
                         </div>
@@ -517,14 +526,14 @@ export default function Checkout() {
             </motion.div>
 
             {/* SỬ DỤNG ĐIỂM CINECOIN */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-white rounded-2xl shadow-lg p-6 flex items-center justify-between">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg p-6 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center">
                   <span className="text-yellow-600 font-bold font-serif text-lg">C</span>
                 </div>
                 <div>
                   <h2 className="text-lg font-bold">Sử dụng điểm CineCoin</h2>
-                  <p className="text-sm text-gray-500">Bạn đang có <span className="font-bold text-yellow-600">{userPoints.toLocaleString('vi-VN')} điểm</span></p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">Bạn đang có <span className="font-bold text-yellow-600">{userPoints.toLocaleString('vi-VN')} điểm</span></p>
                 </div>
               </div>
               
@@ -532,12 +541,12 @@ export default function Checkout() {
                 onClick={() => setUsePoints(!usePoints)}
                 className={`w-14 h-8 rounded-full p-1 transition-colors relative ${usePoints ? 'bg-red-500' : 'bg-gray-200'}`}
               >
-                <div className={`w-6 h-6 bg-white rounded-full shadow-md transition-transform transform ${usePoints ? 'translate-x-6' : 'translate-x-0'}`} />
+                <div className={`w-6 h-6 bg-white dark:bg-slate-900 rounded-full shadow-md transition-transform transform ${usePoints ? 'translate-x-6' : 'translate-x-0'}`} />
               </button>
             </motion.div>
 
             {/* MÃ GIẢM GIÁ */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="bg-white rounded-2xl shadow-lg p-6">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg p-6">
               <div className="flex items-center gap-3 mb-4">
                 <Tag className="w-6 h-6 text-red-600" />
                 <h2 className="text-xl font-bold">Mã Giảm Giá</h2>
@@ -569,7 +578,7 @@ export default function Checkout() {
                       value={voucherCode}
                       onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
                       placeholder="Nhập mã ưu đãi của bạn"
-                      className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-red-500 focus:outline-none transition-colors"
+                      className="flex-1 px-4 py-3 border-2 border-gray-200 dark:border-slate-700 rounded-xl focus:border-red-500 focus:outline-none transition-colors"
                     />
                     <button onClick={applyVoucher} disabled={isVoucherValidating} className="px-6 py-3 bg-gradient-to-r from-red-600 to-orange-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all flex items-center justify-center disabled:opacity-50">
                       {isVoucherValidating ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Áp dụng'}
@@ -585,8 +594,8 @@ export default function Checkout() {
 
                   {/* Hiển thị danh sách Voucher Công Khai */}
                   {publicVouchers.length > 0 && (
-                    <div className="mt-4 pt-4 border-t border-gray-200">
-                      <p className="text-sm font-semibold text-gray-700 mb-3">Mã giảm giá khả dụng:</p>
+                    <div className="mt-4 pt-4 border-t border-gray-200 dark:border-slate-700">
+                      <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Mã giảm giá khả dụng:</p>
                       <div className="space-y-2">
                         {publicVouchers.map(v => (
                           <button
@@ -600,8 +609,8 @@ export default function Checkout() {
                             <div className="flex items-center justify-between">
                               <div>
                                 <span className="font-bold text-red-700">{v.code}</span>
-                                <p className="text-xs text-gray-600 mt-1">
-                                  {v.description || `Giảm ${v.type === 'PERCENT' ? v.value + '%' : v.value.toLocaleString('vi-VN') + 'đ'}`}
+                                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                                  {v.description || `Giảm ${v.type === 'PERCENTAGE' ? v.value + '%' : v.value.toLocaleString('vi-VN') + 'đ'}`}
                                 </p>
                               </div>
                               <Tag className="w-5 h-5 text-orange-500" />
@@ -616,7 +625,7 @@ export default function Checkout() {
             </motion.div>
 
             {/* PHƯƠNG THỨC THANH TOÁN */}
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-white rounded-2xl shadow-lg p-6">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg p-6">
               <h2 className="text-xl font-bold mb-4">Phương Thức Thanh Toán</h2>
               <PaymentMethods
                 selectedMethod={paymentMethod}
@@ -628,35 +637,35 @@ export default function Checkout() {
 
           {/* CỘT PHẢI: TỔNG KẾT ĐƠN HÀNG */}
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-24">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg p-6 sticky top-24">
               <h2 className="text-xl font-bold mb-4">Thông Tin Đơn Hàng</h2>
 
               <div className="space-y-4">
                 <div>
                   <h3 className="font-semibold mb-2">{movie.title}</h3>
-                  <p className="text-sm text-gray-600">{showtime.theater}</p>
-                  <p className="text-sm text-gray-600">{showtime.date} - {showtime.time}</p>
-                  <p className="text-sm text-gray-600">{showtime.format}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{showtime.theater}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{showtime.date} - {showtime.time}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{showtime.format}</p>
                 </div>
 
-                <div className="border-t border-gray-200 pt-4">
-                  <p className="text-sm text-gray-600 mb-2">
+                <div className="border-t border-gray-200 dark:border-slate-700 pt-4">
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
                     Ghế đã chọn: {seats.map((s: any) => s.id).join(', ')}
                   </p>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Tiền vé phim:</span>
+                    <span className="text-gray-600 dark:text-gray-400">Tiền vé phim:</span>
                     <span className="font-semibold">{totalPrice.toLocaleString('vi-VN')}đ</span>
                   </div>
                 </div>
 
                 {Object.keys(selectedCombos).length > 0 && (
-                  <div className="border-t border-gray-200 pt-4">
+                  <div className="border-t border-gray-200 dark:border-slate-700 pt-4">
                     <p className="font-semibold mb-2">Bắp nước đã chọn:</p>
                     {Object.entries(selectedCombos).map(([itemKey, quantity]) => {
                       const item = allItems.find(i => `${i.category}-${i.id}` === itemKey);
                       return (
                         <div key={itemKey} className="flex justify-between text-sm mb-1">
-                          <span className="text-gray-600">{item?.name} x{quantity}</span>
+                          <span className="text-gray-600 dark:text-gray-400">{item?.name} x{quantity}</span>
                           <span className="font-semibold">{((item?.price || 0) * quantity).toLocaleString('vi-VN')}đ</span>
                         </div>
                       );
@@ -667,12 +676,12 @@ export default function Checkout() {
                   <div className="mt-6 border-t-2 border-dashed border-red-200 pt-6">
                     <div className="bg-gradient-to-b from-white to-orange-50 p-6 rounded-2xl text-center border border-red-100 shadow-[0_0_20px_rgba(220,38,38,0.1)] relative overflow-hidden">
                       <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500"></div>
-                      <h2 className="text-xl font-bold mb-2 text-gray-900">
+                      <h2 className="text-xl font-bold mb-2 text-gray-900 dark:text-gray-100">
                         {paymentMethod === 'saved_card' 
                           ? 'Mô Phỏng Thẻ Liên Kết' 
                           : (isChecking ? 'Đang chờ thanh toán...' : 'Quét mã để thanh toán')}
                       </h2>
-                      <p className="text-sm text-gray-600 mb-4 px-2">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 px-2">
                         {paymentMethod === 'saved_card'
                           ? 'Bạn đã chọn thẻ liên kết. Vì đây là mô phỏng, vui lòng quét mã MB Bank (tài khoản thực) bên dưới để hoàn tất thanh toán thật.'
                           : (isChecking
@@ -680,7 +689,7 @@ export default function Checkout() {
                               : 'Quý khách vui lòng quét mã để hoàn tất đơn hàng.')}
                       </p>
 
-                      <div className="bg-white p-3 border-2 border-dashed border-red-200 rounded-xl inline-block mx-auto">
+                      <div className="bg-white dark:bg-slate-900 p-3 border-2 border-dashed border-red-200 rounded-xl inline-block mx-auto">
                         <img
                           src={qrUrl}
                           alt="QR Thanh toán"
@@ -689,7 +698,7 @@ export default function Checkout() {
                       </div>
 
                       <div className="mt-4 text-center">
-                        <p className="text-xs text-gray-500 mb-1">Nội dung chuyển khoản:</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Nội dung chuyển khoản:</p>
                         <p className="font-mono font-bold text-lg text-red-600 tracking-wider bg-red-50 py-2 rounded-lg break-all px-2">
                           {qrInfo?.description || qrInfo?.orderCode || `DH${qrInfo?.bookingId}`}
                         </p>
@@ -703,15 +712,15 @@ export default function Checkout() {
 
                       <button
                         onClick={() => { setQrUrl(null); setIsChecking(false); setNotificationError(null); }}
-                        className="mt-4 w-full py-2.5 text-gray-600 font-semibold hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        className="mt-4 w-full py-2.5 text-gray-600 dark:text-gray-400 font-semibold hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                       >
                         Đổi phương thức thanh toán
                       </button>
                     </div>
                   </div>
                 )}
-                <div className="border-t-2 border-gray-200 pt-4">
-                  <div className="flex justify-between text-gray-600 mb-2">
+                <div className="border-t-2 border-gray-200 dark:border-slate-700 pt-4">
+                  <div className="flex justify-between text-gray-600 dark:text-gray-400 mb-2">
                     <span>Tạm tính:</span>
                     <span className="font-semibold">{subtotal.toLocaleString('vi-VN')}đ</span>
                   </div>
@@ -730,14 +739,14 @@ export default function Checkout() {
                     </div>
                   )}
 
-                  <div className="flex justify-between items-center mb-2 pt-2 border-t border-gray-200">
+                  <div className="flex justify-between items-center mb-2 pt-2 border-t border-gray-200 dark:border-slate-700">
                     <span className="font-bold text-lg">Tổng cộng:</span>
                     <span className="font-bold text-2xl text-red-600">{grandTotal.toLocaleString('vi-VN')}đ</span>
                   </div>
 
                   {paymentMethod && (
                     <div className="flex items-center justify-between mb-4 bg-orange-50 rounded-xl px-3 py-2 text-xs">
-                      <span className="text-gray-500">Thanh toán qua</span>
+                      <span className="text-gray-500 dark:text-gray-400">Thanh toán qua</span>
                       <span className="font-bold text-orange-700">{PAYMENT_LABELS[paymentMethod] || paymentMethod}</span>
                     </div>
                   )}

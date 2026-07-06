@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -30,8 +31,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     // Trong BookingRepository.java
     Optional<Booking> findByOrderCode(String orderCode);
-    
-    Optional<Booking> findFirstByOrderCodeStartingWith(String prefix);
+
+    // Fix #5: đã xóa findFirstByOrderCodeStartingWith (prefix match sai logic)
+    // BookingService.handleWebhookPayment dùng findByOrderCode (exact match) thay thế
 
     // ==========================================
     // STATS QUERIES
@@ -82,4 +84,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Object[]> getMovieGenreShare();
 
     List<Booking> findTop10ByOrderByBookingTimeDesc();
+
+    // Fix #6: derived query + Pageable — tránh hoàn toàn native/JPQL syntax issue
+    List<Booking> findByPaymentStatusInOrderByBookingTimeDesc(List<String> paymentStatuses, Pageable pageable);
 }

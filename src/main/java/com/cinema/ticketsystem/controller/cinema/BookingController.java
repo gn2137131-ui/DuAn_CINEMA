@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,12 +31,13 @@ import com.cinema.ticketsystem.entity.user.Role;
 import com.cinema.ticketsystem.entity.user.User;
 import com.cinema.ticketsystem.repository.cinema.BookingRepository;
 import com.cinema.ticketsystem.service.cinema.BookingService;
+import com.cinema.ticketsystem.service.cinema.EmailService;
 import com.cinema.ticketsystem.service.jwt.AuthService;
 import com.cinema.ticketsystem.service.payment.PaymentService;
 
 @RestController
 @RequestMapping("/api/bookings")
-@CrossOrigin(origins = "*")
+// Fix #3: xóa @CrossOrigin("*") — CORS quản lý tập trung ở SecurityConfig.corsConfigurationSource()
 public class BookingController {
 
     @Autowired
@@ -47,6 +49,8 @@ public class BookingController {
     private BookingService bookingService;
     @Autowired
     private PaymentService paymentService;
+    @Autowired
+    private EmailService emailService;
 
     // 1. Lấy danh sách booking của user hiện tại
     @GetMapping("/my")
@@ -57,30 +61,21 @@ public class BookingController {
 
     // 2. Lấy tất cả booking (chỉ admin)
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'ROLE_ADMIN', 'EMPLOYEE', 'ROLE_EMPLOYEE')")
     public List<Booking> getAllBookings() {
         return bookingRepository.findAll();
     }
 
     // 2b. Lấy N booking gần nhất đã thanh toán (cho Notification Center)
     @GetMapping("/recent")
-    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLOYEE')")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'ROLE_ADMIN', 'EMPLOYEE', 'ROLE_EMPLOYEE')")
     public ResponseEntity<?> getRecentBookings(
-            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "10") int limit) {
+            @org.springframework.web.bind.annotation.RequestParam(name = "limit", defaultValue = "10") int limit) {
         try {
-            List<Booking> all = bookingRepository.findAll().stream()
-                    .filter(b -> "PAID".equals(b.getPaymentStatus()) || "PRINTED".equals(b.getPaymentStatus()))
-                    .sorted((a, bk) -> {
-                        java.time.LocalDateTime ta = a.getPaymentTime() != null ? a.getPaymentTime() : a.getBookingTime();
-                        java.time.LocalDateTime tb = bk.getPaymentTime() != null ? bk.getPaymentTime() : bk.getBookingTime();
-                        if (ta == null && tb == null) return 0;
-                        if (ta == null) return 1;
-                        if (tb == null) return -1;
-                        return tb.compareTo(ta);
-                    })
-                    .limit(limit)
-                    .collect(Collectors.toList());
-            return ResponseEntity.ok(all);
+            List<Booking> recent = bookingRepository.findByPaymentStatusInOrderByBookingTimeDesc(
+                    List.of("PAID", "PRINTED"),
+                    PageRequest.of(0, Math.min(limit, 100)));
+            return ResponseEntity.ok(recent);
         } catch (Exception e) {
             return ResponseEntity.status(500).body(e.getMessage());
         }
@@ -88,7 +83,7 @@ public class BookingController {
 
     // 3. Lấy chi tiết booking theo ID
     @GetMapping("/{id}")
-    public ResponseEntity<?> getBookingById(@PathVariable Long id) {
+    public ResponseEntity<?> getBookingById(@PathVariable("id") Long id) {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Booking không tồn tại!"));
 
@@ -147,22 +142,22 @@ public class BookingController {
         return ResponseEntity.ok(bookingDetails);
     }
 
-    // 4. Hủy booking (chỉ user sở hữu và trạng thái PENDING)
+    // 4. Hủy booking (chỉ user sở hữu và trạng thái PENDING/PAID hợp lệ)
     @PutMapping("/{id}/cancel")
-    public ResponseEntity<?> cancelBooking(@PathVariable Long id) {
+    public ResponseEntity<?> cancelBooking(@PathVariable("id") Long id) {
         try {
             Booking booking = bookingRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Booking không tồn tại!"));
 
             User currentUser = authService.getCurrentUser();
             if (currentUser.getRole() != Role.ADMIN && currentUser.getRole() != Role.EMPLOYEE && !booking.getUser().getId().equals(currentUser.getId())) {
-                return ResponseEntity.status(403).body("Bạn không có quyền hủy booking này!");
+                return ResponseEntity.status(403).body(java.util.Map.of("error", "Bạn không có quyền hủy booking này!"));
             }
 
             String message = bookingService.cancelBooking(id);
-            return ResponseEntity.ok(message);
+            return ResponseEntity.ok(java.util.Map.of("message", message));
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 
@@ -226,10 +221,10 @@ public class BookingController {
 
         } catch (RuntimeException e) {
             // In ra log console trên Server để dễ debug nếu có lỗi khác
-            System.err.println(e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
-            System.err.println(e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(500).body("Đã xảy ra lỗi hệ thống khi tạo đơn hàng: " + e.getMessage());
         }
     }
@@ -238,7 +233,7 @@ public class BookingController {
     // NEW ENDPOINT: Lấy SePay QR Code để thanh toán
     // =====================================================
     @GetMapping("/{id}/qr-payment")
-    public ResponseEntity<?> getSePayQrCode(@PathVariable Long id) {
+    public ResponseEntity<?> getSePayQrCode(@PathVariable("id") Long id) {
         try {
             Booking booking = bookingRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Booking không tồn tại!"));
@@ -271,7 +266,7 @@ public class BookingController {
 
     @Transactional
     @PutMapping("/{id}/confirm")
-    public ResponseEntity<?> confirmBooking(@PathVariable Long id) {
+    public ResponseEntity<?> confirmBooking(@PathVariable("id") Long id) {
         try {
             Booking booking = bookingRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Booking không tồn tại!"));
@@ -305,7 +300,7 @@ public class BookingController {
 
     @GetMapping("/code/{orderCode}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'ROLE_ADMIN', 'EMPLOYEE', 'ROLE_EMPLOYEE')")
-    public ResponseEntity<?> getBookingByCode(@PathVariable String orderCode) {
+    public ResponseEntity<?> getBookingByCode(@PathVariable("orderCode") String orderCode) {
         Booking booking = bookingRepository.findByOrderCode(orderCode)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng với mã: " + orderCode));
 
@@ -362,7 +357,7 @@ public class BookingController {
     @Transactional
     @PutMapping("/code/{orderCode}/print")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'ROLE_ADMIN', 'EMPLOYEE', 'ROLE_EMPLOYEE')")
-    public ResponseEntity<?> printTicketByCode(@PathVariable String orderCode) {
+    public ResponseEntity<?> printTicketByCode(@PathVariable("orderCode") String orderCode) {
         try {
             Booking booking = bookingRepository.findByOrderCode(orderCode)
                     .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn hàng với mã: " + orderCode));
@@ -377,6 +372,41 @@ public class BookingController {
             return ResponseEntity.ok("Xác nhận in vé thành công!");
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // =====================================================
+    // ENDPOINT: Gửi email xác nhận vé cho khách hàng
+    // =====================================================
+    @PostMapping("/{id}/send-email")
+    public ResponseEntity<?> sendConfirmationEmail(@PathVariable("id") Long id) {
+        try {
+            Booking booking = bookingRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Booking không tồn tại!"));
+
+            User currentUser = authService.getCurrentUser();
+            if (currentUser.getRole() != Role.ADMIN
+                    && currentUser.getRole() != Role.EMPLOYEE
+                    && !booking.getUser().getId().equals(currentUser.getId())) {
+                return ResponseEntity.status(403).body("Bạn không có quyền gửi email cho booking này!");
+            }
+
+            emailService.sendBookingConfirmationEmail(booking);
+
+            String email = booking.getUser() != null ? booking.getUser().getEmail() : "";
+            return ResponseEntity.ok(java.util.Map.of(
+                    "success", true,
+                    "message", "Email đã được gửi tới " + email,
+                    "email", email
+            ));
+        } catch (jakarta.mail.MessagingException e) {
+            System.err.println("Lỗi gửi email: " + e.getMessage());
+            return ResponseEntity.status(500).body("Lỗi khi gửi email: " + e.getMessage());
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Lỗi không xác định khi gửi email: " + e.getMessage());
+            return ResponseEntity.status(500).body("Lỗi hệ thống: " + e.getMessage());
         }
     }
 }

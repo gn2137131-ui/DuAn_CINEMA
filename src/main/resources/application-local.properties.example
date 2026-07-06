@@ -1,0 +1,23 @@
+# ============================================================
+# 🎬 CineVerse – Application Configuration EXAMPLE
+# ============================================================
+# Sao chép file này thành application-local.properties
+# và điền giá trị thực vào các trường được đánh dấu CHANGE_ME
+# ============================================================
+
+# --- Database ---
+spring.datasource.password=CHANGE_ME
+
+# --- Cloudinary ---
+cloudinary.cloud_name=CHANGE_ME
+cloudinary.api_key=CHANGE_ME
+cloudinary.api_secret=CHANGE_ME
+
+# --- SePay Payment ---
+sepay.api.key=CHANGE_ME
+sepay.api.account-number=CHANGE_ME
+sepay.api.account-name=CINEMA
+
+# --- Email (Gmail SMTP) ---
+spring.mail.username=CHANGE_ME@gmail.com
+spring.mail.password=CHANGE_ME

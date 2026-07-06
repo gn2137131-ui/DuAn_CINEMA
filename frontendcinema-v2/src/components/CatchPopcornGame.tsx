@@ -34,6 +34,10 @@ const GAME_DURATION = 30; // seconds
 
 export default function CatchPopcornGame({ isOpen, onClose, onWin }: CatchPopcornGameProps) {
   const [gameState, setGameState] = useState<'start' | 'playing' | 'end'>('start');
+  const [playCount, setPlayCount] = useState(() => {
+    const saved = localStorage.getItem('popcorn_play_count');
+    return saved ? parseInt(saved, 10) : 0;
+  });
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(GAME_DURATION);
   const [particles, setParticles] = useState<Particle[]>([]);
@@ -211,6 +215,11 @@ export default function CatchPopcornGame({ isOpen, onClose, onWin }: CatchPopcor
   }, [gameState, gameLoop]);
 
   const startGame = () => {
+    setPlayCount(prev => {
+      const newCount = prev + 1;
+      localStorage.setItem('popcorn_play_count', newCount.toString());
+      return newCount;
+    });
     setGameState('playing');
     setScore(0);
     setTimeLeft(GAME_DURATION);
@@ -222,13 +231,23 @@ export default function CatchPopcornGame({ isOpen, onClose, onWin }: CatchPopcor
     bucketXRef.current = window.innerWidth / 2 - BUCKET_WIDTH / 2;
   };
 
-  const handleFinish = () => {
+  const handleFinishAndClose = () => {
     if (score >= 50) {
       confetti({ particleCount: 150, spread: 80, origin: { y: 0.5 }, colors: ['#ff0000', '#ffa500', '#ffff00'] });
       onWin(500);
     }
     onClose();
   };
+
+  const handlePlayAgain = () => {
+    if (score >= 50) {
+      confetti({ particleCount: 150, spread: 80, origin: { y: 0.5 }, colors: ['#ff0000', '#ffa500', '#ffff00'] });
+      onWin(500);
+    }
+    setGameState('start');
+  };
+
+  const cost = playCount * 50;
 
   if (!isOpen) return null;
 
@@ -280,15 +299,26 @@ export default function CatchPopcornGame({ isOpen, onClose, onWin }: CatchPopcor
               ⌨️ Hỗ trợ chơi bằng Phím Mũi Tên (Trái/Phải) hoặc phím A/D!
             </p>
             
-            <div className="flex justify-center gap-8 mb-10 text-base font-bold bg-white/5 p-4 rounded-2xl">
+            <div className="flex justify-center gap-8 mb-8 text-base font-bold bg-white/5 p-4 rounded-2xl">
               <div className="flex flex-col items-center"><span className="text-3xl mb-1">🍿</span> +1 Điểm</div>
               <div className="flex flex-col items-center"><span className="text-3xl mb-1 filter drop-shadow-[0_0_10px_yellow]">⭐</span> +5 Điểm</div>
               <div className="flex flex-col items-center"><span className="text-3xl mb-1">🔥</span> -5 Điểm</div>
             </div>
 
-            <button onClick={startGame} className="w-full py-5 bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-500 hover:to-orange-400 rounded-2xl font-black text-2xl flex items-center justify-center gap-3 transition-all hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(220,38,38,0.5)]">
-              <Play className="w-7 h-7 fill-current" /> BẮT ĐẦU CHƠI
-            </button>
+            {cost > 0 && (
+              <div className="mb-6 bg-red-900/40 border border-red-500/30 py-2 px-4 rounded-xl text-red-200 font-bold inline-block">
+                ⚠️ Lượt chơi này tốn: <span className="text-white text-xl">{cost} CineCoins</span>
+              </div>
+            )}
+
+            <div className="flex flex-col sm:flex-row gap-4">
+              <button onClick={onClose} className="flex-1 py-4 bg-white/10 hover:bg-white/20 rounded-2xl font-black text-xl flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 border border-white/20">
+                <X className="w-6 h-6" /> THOÁT GAME
+              </button>
+              <button onClick={startGame} className="flex-1 py-4 bg-gradient-to-r from-red-600 to-orange-500 hover:from-red-500 hover:to-orange-400 rounded-2xl font-black text-xl flex items-center justify-center gap-2 transition-all hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(220,38,38,0.5)]">
+                <Play className="w-6 h-6 fill-current" /> {cost === 0 ? 'CHƠI MIỄN PHÍ' : 'CHƠI TIẾP'}
+              </button>
+            </div>
           </motion.div>
         )}
 
@@ -383,9 +413,14 @@ export default function CatchPopcornGame({ isOpen, onClose, onWin }: CatchPopcor
               </div>
             )}
 
-            <button onClick={handleFinish} className="w-full py-4 bg-white hover:bg-gray-200 text-black rounded-2xl font-black text-xl transition-transform active:scale-95 shadow-lg">
-              XÁC NHẬN
-            </button>
+            <div className="flex gap-4">
+              <button onClick={handleFinishAndClose} className="flex-1 py-4 bg-gray-800 hover:bg-gray-700 border border-gray-600 text-white rounded-2xl font-black text-xl transition-transform active:scale-95">
+                THOÁT
+              </button>
+              <button onClick={handlePlayAgain} className="flex-[2] py-4 bg-white hover:bg-gray-200 text-black rounded-2xl font-black text-xl transition-transform active:scale-95 shadow-lg">
+                XÁC NHẬN & CHƠI TIẾP
+              </button>
+            </div>
           </motion.div>
         )}
       </motion.div>

@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/rooms")//1
-@CrossOrigin(origins = "*")
+@RequestMapping("/api/rooms")
+// Fix #3: xóa @CrossOrigin("*") — CORS quản lý tập trung ở SecurityConfig
 public class RoomController {
 
     @Autowired
@@ -34,7 +34,7 @@ public class RoomController {
     // 3. Lấy thông tin chi tiết 1 phòng (Để biết số hàng/cột nhằm vẽ sơ đồ ghế)
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Room> getRoomById(@PathVariable Long id) {
+    public ResponseEntity<Room> getRoomById(@PathVariable("id") Long id) {
         return roomRepository.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -43,7 +43,7 @@ public class RoomController {
     // 4. Cập nhật thông tin phòng (Đổi tên phòng hoặc nâng cấp loại phòng)
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Room> updateRoom(@PathVariable Long id, @RequestBody Room roomDetails) {
+    public ResponseEntity<Room> updateRoom(@PathVariable("id") Long id, @RequestBody Room roomDetails) {
         return roomRepository.findById(id).map(room -> {
             room.setName(roomDetails.getName());
             room.setType(roomDetails.getType());
@@ -55,7 +55,7 @@ public class RoomController {
 
     // 5. Xóa phòng chiếu
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteRoom(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteRoom(@PathVariable("id") Long id) {
         return roomRepository.findById(id).map(room -> {
             roomRepository.delete(room);
             return ResponseEntity.ok().<Void>build();

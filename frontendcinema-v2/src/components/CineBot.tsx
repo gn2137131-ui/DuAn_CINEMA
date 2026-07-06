@@ -1,3 +1,4 @@
+import { toast } from 'sonner';
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, X, Send, Bot, User, Film, Mic, MicOff, Star, Trash2, Calendar, Ticket } from 'lucide-react';
@@ -87,7 +88,7 @@ export default function CineBot() {
   const handleVoice = () => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      alert("Trình duyệt của bạn không hỗ trợ tính năng nhận diện giọng nói!");
+      toast.error("Trình duyệt của bạn không hỗ trợ tính năng nhận diện giọng nói!");
       return;
     }
 

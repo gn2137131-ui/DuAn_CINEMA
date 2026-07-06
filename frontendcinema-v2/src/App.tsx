@@ -3,6 +3,7 @@ import { router } from './routes';
 import { useEffect } from 'react';
 import { socketService } from './utils/socketClient';
 import { ThemeProvider } from './components/ThemeProvider';
+import { Toaster } from 'sonner';
 
 export default function App() {
   useEffect(() => {
@@ -18,8 +19,9 @@ export default function App() {
   }, []);
 
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+    <>
+      <Toaster richColors position="top-center" />
       <RouterProvider router={router} />
-    </ThemeProvider>
+    </>
   );
 }

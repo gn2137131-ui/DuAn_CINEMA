@@ -1,6 +1,6 @@
 package com.cinema.ticketsystem.service.cinema;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,28 +32,16 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ShowtimeService {
 
-    @Autowired
-    private ShowtimeRepository showtimeRepository;
-
-    @Autowired
-    private MovieRepository movieRepository;
-
-    @Autowired
-    private RoomRepository roomRepository;
-
-    @Autowired
-    private SeatRepository seatRepository;
-
-    @Autowired
-    private CinemaSettingsRepository settingsRepository;
-
-    @Autowired
-    private ShowtimeSeatRepository showtimeSeatRepository;
-
-    @Autowired
-    private TicketRepository ticketRepository;
+    private final ShowtimeRepository showtimeRepository;
+    private final MovieRepository movieRepository;
+    private final RoomRepository roomRepository;
+    private final SeatRepository seatRepository;
+    private final CinemaSettingsRepository settingsRepository;
+    private final ShowtimeSeatRepository showtimeSeatRepository;
+    private final TicketRepository ticketRepository;
 
     @Transactional
     public Showtime createShowtime(Showtime showtime) {

@@ -1,6 +1,7 @@
+import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'motion/react';
+import { motion } from 'framer-motion';
 import { Award, Star, Gift, Zap, Crown, Check, ArrowLeft, Sparkles } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -170,9 +171,9 @@ export default function Membership() {
                         <button 
                           onClick={() => {
                             if (!canRedeem) {
-                              alert(`Yêu cầu từ ${gift.pts} điểm trở lên mới được đổi ${gift.title}!`);
+                              toast.error(`Yêu cầu từ ${gift.pts} điểm trở lên mới được đổi ${gift.title}!`);
                             } else {
-                              alert(`Đổi thành công: ${gift.title}! (Giả lập)`);
+                              toast.success(`Đổi thành công: ${gift.title}! (Giả lập)`);
                             }
                           }}
                           className={`mt-3 w-full py-1.5 rounded-lg text-xs font-bold transition-colors shadow-sm ${

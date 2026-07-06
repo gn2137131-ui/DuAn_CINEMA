@@ -15,7 +15,8 @@ public class Seat {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    // Fix #9: LAZY thay vì EAGER mặc định
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id")
     @JsonBackReference // Khớp với @JsonManagedReference ở Room để tránh vòng lặp vô hạn
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})

@@ -181,7 +181,7 @@ export default function Header() {
                         className="flex items-center gap-3 px-4 py-3 hover:bg-slate-800 rounded-xl transition-colors"
                       >
                         <User className="w-5 h-5 text-slate-400" />
-                        <span className="font-semibold">Trang cá nhân</span>
+                        <span className="font-semibold">{t('header.profile', 'Trang cá nhân')}</span>
                       </Link>
                       <Link
                         to="/booking-history"
@@ -189,7 +189,7 @@ export default function Header() {
                         className="flex items-center gap-3 px-4 py-3 hover:bg-slate-800 rounded-xl transition-colors"
                       >
                         <Ticket className="w-5 h-5 text-slate-400" />
-                        <span className="font-semibold">Lịch sử đặt vé</span>
+                        <span className="font-semibold">{t('header.history', 'Lịch sử đặt vé')}</span>
                       </Link>
                       <Link
                         to="/membership"
@@ -197,14 +197,14 @@ export default function Header() {
                         className="flex items-center gap-3 px-4 py-3 hover:bg-slate-800 rounded-xl transition-colors"
                       >
                         <Award className="w-5 h-5 text-slate-400" />
-                        <span className="font-semibold">Thẻ thành viên</span>
+                        <span className="font-semibold">{t('header.membership', 'Thẻ thành viên')}</span>
                       </Link>
                       <button
                         onClick={handleLogout}
-                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-950/30 rounded-xl transition-colors text-red-500"
+                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-500/10 hover:text-red-500 rounded-xl transition-colors text-left"
                       >
                         <LogOut className="w-5 h-5" />
-                        <span className="font-semibold">Đăng xuất</span>
+                        <span className="font-semibold">{t('header.logout', 'Đăng xuất')}</span>
                       </button>
                     </div>
                   </div>

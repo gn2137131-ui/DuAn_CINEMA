@@ -1,6 +1,7 @@
 package com.cinema.ticketsystem.service.jwt;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.cinema.ticketsystem.dto.RegisterRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -9,44 +10,49 @@ import com.cinema.ticketsystem.entity.user.User;
 import com.cinema.ticketsystem.repository.user.UserRepository;
 
 @Service
+@RequiredArgsConstructor
 public class AuthService {
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-    @Autowired
-    private JwtService jwtService;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
-    public String register(User user) {
-        if (user.getUsername() == null || user.getUsername().trim().isEmpty()) {
+    // Fix #1: nhận RegisterRequest DTO thay vì User entity
+    // → luôn set role = CUSTOMER, không để client tự truyền role
+    public String register(RegisterRequest request) {
+        if (request.getUsername() == null || request.getUsername().trim().isEmpty()) {
             throw new RuntimeException("Tên đăng nhập không được để trống");
         }
-        if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
+        if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
             throw new RuntimeException("Email không được để trống");
         }
-        if (user.getPhone() == null || !user.getPhone().matches("\\d{10}")) {
+        if (request.getPhone() == null || !request.getPhone().matches("\\d{10}")) {
             throw new RuntimeException("Số điện thoại phải bao gồm đúng 10 chữ số");
         }
-        if (user.getPassword() == null || user.getPassword().length() < 6) {
-            throw new RuntimeException("Mật khẩu phải có ít nhất 6 ký tự");
+        if (request.getPassword() == null || request.getPassword().length() < 8) {
+            throw new RuntimeException("Mật khẩu phải có ít nhất 8 ký tự");
         }
-        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
+        if (!request.getPassword().matches("^(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z\\d]).{8,}$")) {
+            throw new RuntimeException("Mật khẩu phải chứa ít nhất 1 chữ hoa, 1 chữ số và 1 ký tự đặc biệt");
+        }
+        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
             throw new RuntimeException("Tên đăng nhập đã tồn tại");
         }
-        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("Email đã được sử dụng");
         }
 
+        User user = new User();
+        user.setUsername(request.getUsername());
+        user.setEmail(request.getEmail());
+        user.setPhone(request.getPhone());
+        user.setFullName(request.getFullName());
         // Mã hóa mật khẩu trước khi lưu
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-
-        // Nếu không gửi role từ Postman, mặc định là CUSTOMER
-        if (user.getRole() == null) {
-            user.setRole(Role.CUSTOMER);
-        }
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        // Fix #1: LUÔN set CUSTOMER — client không thể tự set ADMIN qua API
+        user.setRole(Role.CUSTOMER);
 
         userRepository.save(user);
-        return "Đăng ký thành công!";
+        return jwtService.generateToken(user);
     }
 
     public String login(String username, String password) {

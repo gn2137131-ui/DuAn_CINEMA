@@ -18,13 +18,15 @@ public class Combo {
 
     // --- NEW RELATIONS ---
 
-    @ManyToOne
+    // Fix #9: LAZY thay vì EAGER mặc định
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "popcorn_id")
     private Concession popcorn;
 
     private Integer popcornCount;
 
-    @ManyToOne
+    // Fix #9: LAZY thay vì EAGER mặc định
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "drink_id")
     private Concession drink;
 

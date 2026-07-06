@@ -2,20 +2,20 @@ package com.cinema.ticketsystem.service.cinema;
 import com.cinema.ticketsystem.entity.cinema.ShowtimeSeat;
 import com.cinema.ticketsystem.repository.cinema.ShowtimeSeatRepository;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
+
 // Dịch vụ này sẽ chạy định kỳ để giải phóng các ghế đã giữ nhưng không được thanh toán sau 10 phút
 
-
 @Service
+@RequiredArgsConstructor
 public class SeatCleanupService {
 
-    @Autowired
-    private ShowtimeSeatRepository showtimeSeatRepository;
+    private final ShowtimeSeatRepository showtimeSeatRepository;
 
     // Chạy mỗi 60 giây (60000 ms)
     @Scheduled(fixedRate = 60000)

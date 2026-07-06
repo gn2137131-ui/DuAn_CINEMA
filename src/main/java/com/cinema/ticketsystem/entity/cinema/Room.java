@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
+@Table(name = "room") // Revert to original table name
 @Data
 public class Room {
     @Id

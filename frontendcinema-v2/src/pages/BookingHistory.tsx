@@ -1,6 +1,7 @@
+import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Ticket, Calendar, Clock, MapPin, Star, ArrowLeft, X, CheckCircle, MessageSquare } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -17,7 +18,7 @@ interface Booking {
   format: string;
   seats: string[];
   total: number;
-  status: 'upcoming' | 'past';
+  status: 'upcoming' | 'past' | 'cancelled';
   bookingDate: string;
   rated?: boolean;
   rating?: number;
@@ -37,9 +38,11 @@ export default function BookingHistory() {
   const [reviewComment, setReviewComment] = useState('');
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [reviewSuccess, setReviewSuccess] = useState(false);
+  const [cancelTarget, setCancelTarget] = useState<Booking | null>(null);
+  const [cancelSubmitting, setCancelSubmitting] = useState(false);
 
   const handleAddToWallet = (type: 'apple' | 'google') => {
-    alert(`Đã lưu vé vào ${type === 'apple' ? 'Apple' : 'Google'} Wallet thành công!`);
+    toast.success(`Đã lưu vé vào ${type === 'apple' ? 'Apple' : 'Google'} Wallet thành công!`);
   };
 
   // Fetch user bookings
@@ -61,10 +64,12 @@ export default function BookingHistory() {
             return s ? `${s.rowName}${s.colIndex}` : 'Unknown';
           }) || [];
           
-          let status: 'upcoming' | 'past' = 'past';
+          let status: 'upcoming' | 'past' | 'cancelled' = 'past';
           const validStartTime = showtime?.startTime || showtime?.start_time || '';
           
-          if (showtime && showtime.showDate && validStartTime) {
+          if (b.paymentStatus === 'CANCELLED') {
+            status = 'cancelled';
+          } else if (showtime && showtime.showDate && validStartTime) {
             let timeStr = validStartTime;
             if (Array.isArray(timeStr)) {
               timeStr = `${String(timeStr[0]).padStart(2, '0')}:${String(timeStr[1]).padStart(2, '0')}`;
@@ -166,9 +171,29 @@ export default function BookingHistory() {
       }, 2000);
     } catch (err: any) {
       const errorMsg = typeof err?.response?.data === 'string' ? err.response.data : (err?.response?.data?.message || err?.message || 'Gửi đánh giá thất bại. Vui lòng thử lại!');
-      alert(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setReviewSubmitting(false);
+    }
+  };
+
+  const handleCancelBooking = async () => {
+    if (!cancelTarget) return;
+    setCancelSubmitting(true);
+    try {
+      const res = await axiosClient.put(`/bookings/${cancelTarget.id}/cancel`) as any;
+      toast.success(res?.message || 'Đã hủy vé thành công!');
+      // Update local state
+      setBookings(prev => prev.map(b => 
+        b.id === cancelTarget.id ? { ...b, status: 'cancelled' } : b
+      ));
+      setCancelTarget(null);
+    } catch (err: any) {
+      const errorMsg = err?.response?.data?.error || err?.response?.data || err?.message || 'Hủy vé thất bại. Vui lòng thử lại!';
+      toast.error(errorMsg);
+      setCancelTarget(null);
+    } finally {
+      setCancelSubmitting(false);
     }
   };
 
@@ -237,6 +262,16 @@ export default function BookingHistory() {
                 >
                   Đã xem
                 </button>
+                <button
+                  onClick={() => setFilter('cancelled' as any)}
+                  className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
+                    filter === 'cancelled' as any
+                      ? 'bg-gradient-to-r from-red-600 to-orange-500 text-white'
+                      : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                  }`}
+                >
+                  Đã hủy
+                </button>
               </div>
             </div>
           </motion.div>
@@ -291,9 +326,11 @@ export default function BookingHistory() {
                         <span className={`inline-block px-4 py-1 rounded-full text-sm font-semibold ${
                           booking.status === 'upcoming'
                             ? 'bg-green-900/40 text-green-400 border border-green-800'
+                            : booking.status === 'cancelled'
+                            ? 'bg-red-900/40 text-red-400 border border-red-800'
                             : 'bg-slate-800 text-slate-400 border border-slate-700'
                         }`}>
-                          {booking.status === 'upcoming' ? '🎬 Sắp chiếu' : '✅ Đã xem'}
+                          {booking.status === 'upcoming' ? '🎬 Sắp chiếu' : booking.status === 'cancelled' ? '❌ Đã hủy' : '✅ Đã xem'}
                         </span>
                       </div>
                       <span className="text-2xl font-bold text-red-400">
@@ -340,6 +377,16 @@ export default function BookingHistory() {
                         <Ticket className="w-4 h-4" />
                         Xem vé
                       </button>
+
+                      {booking.status === 'upcoming' && (
+                        <button
+                          onClick={() => setCancelTarget(booking)}
+                          className="flex items-center gap-2 px-4 py-2 border-2 border-slate-700 hover:border-red-500 text-slate-400 hover:text-red-400 rounded-xl font-semibold transition-all"
+                        >
+                          <X className="w-4 h-4" />
+                          Hủy vé
+                        </button>
+                      )}
 
                       {booking.status === 'past' && !booking.rated && booking.movieId && (
                         <button
@@ -503,6 +550,46 @@ export default function BookingHistory() {
                     </div>
                   </>
                 )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Cancel Modal */}
+      <AnimatePresence>
+        {cancelTarget && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={() => setCancelTarget(null)}>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden p-6 text-center"
+            >
+              <div className="w-16 h-16 bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <X className="w-8 h-8 text-red-500" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">Xác nhận hủy vé</h3>
+              <p className="text-slate-400 mb-6">
+                Bạn có chắc chắn muốn hủy vé phim <span className="font-semibold text-white">{cancelTarget.movie}</span> không?
+                <br /><br />
+                <span className="text-sm text-yellow-500">Lưu ý: Bạn chỉ có thể hủy vé trước giờ chiếu ít nhất 2 tiếng. Số điểm tích lũy và voucher sử dụng cho đơn hàng này sẽ được hoàn lại.</span>
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setCancelTarget(null)}
+                  className="flex-1 py-3 rounded-xl font-semibold text-slate-400 bg-slate-800 hover:bg-slate-700 transition-colors"
+                >
+                  Không, quay lại
+                </button>
+                <button
+                  onClick={handleCancelBooking}
+                  disabled={cancelSubmitting}
+                  className="flex-1 py-3 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 transition-colors disabled:opacity-50"
+                >
+                  {cancelSubmitting ? 'Đang xử lý...' : 'Đồng ý hủy'}
+                </button>
               </div>
             </motion.div>
           </div>

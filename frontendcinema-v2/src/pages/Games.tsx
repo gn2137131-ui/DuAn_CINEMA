@@ -1,3 +1,4 @@
+import { toast } from 'sonner';
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -6,8 +7,11 @@ import { Gift, Dices, Trophy, Star, ChevronRight, CheckCircle2 } from 'lucide-re
 import axiosClient from '../api/axiosClient';
 import { playClickSound, playWinSound } from '../utils/gameUtils';
 
+import CatchPopcornGame from '../components/CatchPopcornGame';
+
 const Games: React.FC = () => {
   const navigate = useNavigate();
+  const [showPopcorn, setShowPopcorn] = useState(false);
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [quests, setQuests] = useState({ date: '', login: true, gamesPlayed: 0, claimedLogin: false, claimedGames: false });
   const [tickerNews, setTickerNews] = useState<string[]>([]);
@@ -71,12 +75,21 @@ const Games: React.FC = () => {
       }
     } catch (e) {
       console.error(e);
-      alert('Vui lòng đăng nhập để nhận thưởng.');
+      toast.error('Vui lòng đăng nhập để nhận thưởng.');
       navigate('/login');
     }
   };
 
   const availableGames = [
+    {
+      id: 'catch-popcorn',
+      title: 'Hứng Bắp',
+      description: 'Hứng bắp để tích điểm. Đạt 50 điểm nhận ngay phần thưởng lớn!',
+      icon: <span className="text-6xl group-hover:scale-110 transition-transform block">🍿</span>,
+      bgGradient: 'from-red-900 to-orange-900',
+      borderClass: 'border-red-500/30 group-hover:border-red-400',
+      action: () => setShowPopcorn(true)
+    },
     {
       id: 'mystery-box',
       title: 'Hộp Quà Bí Ẩn',
@@ -188,26 +201,31 @@ const Games: React.FC = () => {
               <Dices className="w-6 h-6" /> Kho Trò Chơi
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {availableGames.map((game) => (
-                <Link 
-                  key={game.id} 
-                  to={game.link}
-                  onClick={handleGameClick}
-                  className={`group relative flex flex-col items-center p-6 rounded-3xl bg-gradient-to-br ${game.bgGradient} border-2 ${game.borderClass} shadow-xl hover:shadow-[0_0_30px_rgba(255,255,255,0.15)] transition-all duration-300 transform hover:-translate-y-1 overflow-hidden`}
-                >
-                  <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                  <div className="mb-4 z-10">{game.icon}</div>
-                  <h3 className="text-xl font-bold mb-2 z-10 text-white group-hover:text-yellow-300 transition-colors">
-                    {game.title}
-                  </h3>
-                  <p className="text-slate-300 text-sm text-center z-10 group-hover:text-white transition-colors mb-6">
-                    {game.description}
-                  </p>
-                  <div className="mt-auto px-6 py-2 bg-white/10 rounded-full text-xs font-bold tracking-wider group-hover:bg-white group-hover:text-slate-900 transition-all z-10">
-                    CHƠI NGAY
-                  </div>
-                </Link>
-              ))}
+              {availableGames.map((game) => {
+                const isAction = !!game.action;
+                const Wrapper: any = isAction ? 'button' : Link;
+                const props = isAction ? { onClick: () => { handleGameClick(); game.action!(); } } : { to: game.link, onClick: handleGameClick };
+                
+                return (
+                  <Wrapper 
+                    key={game.id} 
+                    {...props}
+                    className={`group relative flex flex-col items-center p-6 rounded-3xl bg-gradient-to-br ${game.bgGradient} border-2 ${game.borderClass} shadow-xl hover:shadow-[0_0_30px_rgba(255,255,255,0.15)] transition-all duration-300 transform hover:-translate-y-1 overflow-hidden w-full`}
+                  >
+                    <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <div className="mb-4 z-10">{game.icon}</div>
+                    <h3 className="text-xl font-bold mb-2 z-10 text-white group-hover:text-yellow-300 transition-colors">
+                      {game.title}
+                    </h3>
+                    <p className="text-slate-300 text-sm text-center z-10 group-hover:text-white transition-colors mb-6">
+                      {game.description}
+                    </p>
+                    <div className="mt-auto px-6 py-2 bg-white/10 rounded-full text-xs font-bold tracking-wider group-hover:bg-white group-hover:text-slate-900 transition-all z-10">
+                      CHƠI NGAY
+                    </div>
+                  </Wrapper>
+                );
+              })}
             </div>
           </div>
 
@@ -313,6 +331,15 @@ const Games: React.FC = () => {
 
       </div>
       <Footer />
+      
+      <CatchPopcornGame
+        isOpen={showPopcorn}
+        onClose={() => setShowPopcorn(false)}
+        onWin={(coins) => {
+          toast.success(`Chúc mừng! Bạn nhận được ${coins} CineCoins!`);
+          setShowPopcorn(false);
+        }}
+      />
     </div>
   );
 };
