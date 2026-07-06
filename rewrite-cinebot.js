@@ -1,4 +1,6 @@
-import { toast } from 'sonner';
+const fs = require('fs');
+
+const code = `import { toast } from 'sonner';
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, MicOff, Bot, X, Trash2, User, Send, Star, Film, Ticket, Calendar } from 'lucide-react';
@@ -50,7 +52,7 @@ export default function CineBot() {
     } else {
       let welcomeMsg = 'Xin chào! 🎬 Mình là CineBot, trợ lý đặt vé xem phim của bạn. Bạn muốn xem thể loại phim gì hôm nay?';
       if (user && (user.fullName || user.username)) {
-        welcomeMsg = `Chào ${user.fullName || user.username}! 🎬 Mình là CineBot. Rất vui được gặp lại bạn, hôm nay bạn muốn xem phim gì nào?`;
+        welcomeMsg = \`Chào \${user.fullName || user.username}! 🎬 Mình là CineBot. Rất vui được gặp lại bạn, hôm nay bạn muốn xem phim gì nào?\`;
       }
       setMessages([{ id: Date.now(), text: welcomeMsg, sender: 'bot', type: 'text' }]);
     }
@@ -63,17 +65,9 @@ export default function CineBot() {
   }, [messages]);
 
   useEffect(() => {
-    const BACKEND_IMAGE_URL = import.meta.env.VITE_BACKEND_URL || '';
     fetch('/api/movies')
       .then(res => res.json())
-      .then(data => {
-        const formatted = data.map((m: any) => {
-          const rawPoster = m.posterUrl || m.poster_url || m.poster || '';
-          const poster = rawPoster && !rawPoster.startsWith('http') ? `${BACKEND_IMAGE_URL}${rawPoster}` : rawPoster;
-          return { ...m, poster };
-        });
-        setMovies(formatted);
-      })
+      .then(data => setMovies(data))
       .catch(err => console.error(err));
   }, []);
 
@@ -139,7 +133,7 @@ export default function CineBot() {
       if (bookingContext && (lowerInput.includes('đặt') || lowerInput.includes('mua') || lowerInput.includes('xem') || lowerInput.includes('vé'))) {
         newMessages.push({
           id: Date.now(),
-          text: `Tuyệt vời! 🎉 Bạn muốn đặt vé phim "${bookingContext.title}". Dưới đây là các suất chiếu trong ngày hôm nay:`,
+          text: \`Tuyệt vời! 🎉 Bạn muốn đặt vé phim "\${bookingContext.title}". Dưới đây là các suất chiếu trong ngày hôm nay:\`,
           sender: 'bot',
           type: 'showtimes',
           showtimes: ['14:30', '16:45', '19:00', '21:15', '23:30'],
@@ -165,20 +159,14 @@ export default function CineBot() {
         if (user && suggested) {
           newMessages.push({ 
             id: Date.now(), 
-            text: `Dựa trên sở thích của bạn, mình thấy siêu phẩm này rất tuyệt vời:`, 
-            sender: 'bot', 
-            type: 'text',
-            movieData: suggested
+            text: \`Dựa trên sở thích của bạn, mình thấy siêu phẩm này rất tuyệt vời:\`, 
+            sender: 'bot', type: 'text' 
           });
+          newMessages.push({ id: Date.now() + 1, text: '', sender: 'bot', type: 'movieCard', movieData: suggested });
           setBookingContext(suggested);
         } else if (suggested) {
-          newMessages.push({ 
-            id: Date.now(), 
-            text: 'Mình gợi ý cho bạn bộ phim đang hot nhất rạp hiện nay:', 
-            sender: 'bot', 
-            type: 'text',
-            movieData: suggested
-          });
+          newMessages.push({ id: Date.now(), text: 'Mình gợi ý cho bạn bộ phim đang hot nhất rạp hiện nay:', sender: 'bot', type: 'text' });
+          newMessages.push({ id: Date.now() + 1, text: '', sender: 'bot', type: 'movieCard', movieData: suggested });
           setBookingContext(suggested);
         } else {
           newMessages.push({ id: Date.now(), text: 'Hiện tại hệ thống chưa cập nhật phim mới, bạn quay lại sau nhé!', sender: 'bot', type: 'text' });
@@ -201,13 +189,8 @@ export default function CineBot() {
         }
 
         if (matchedMovie) {
-          newMessages.push({ 
-            id: Date.now(), 
-            text: `Mình vừa tìm thấy phim này hợp với bạn! Cực kỳ hấp dẫn luôn nha.`, 
-            sender: 'bot', 
-            type: 'text',
-            movieData: matchedMovie
-          });
+          newMessages.push({ id: Date.now(), text: \`Mình vừa tìm thấy phim này hợp với bạn! Cực kỳ hấp dẫn luôn nha.\`, sender: 'bot', type: 'text' });
+          newMessages.push({ id: Date.now() + 1, text: '', sender: 'bot', type: 'movieCard', movieData: matchedMovie });
           setBookingContext(matchedMovie);
         } else {
           newMessages.push({ id: Date.now(), text: 'Xin lỗi, mình chưa tìm thấy thông tin phù hợp. Bạn thử các từ khóa như "hành động", "khuyến mãi", "giá vé" xem sao nhé!', sender: 'bot', type: 'text' });
@@ -221,7 +204,7 @@ export default function CineBot() {
 
   const formatTime = () => {
     const d = new Date();
-    return `${d.getHours()}:${String(d.getMinutes()).padStart(2, '0')}`;
+    return \`\${d.getHours()}:\${String(d.getMinutes()).padStart(2, '0')}\`;
   };
 
   const quickReplies = ["Phim đang chiếu", "Giá vé", "Khuyến mãi", "Đề xuất cho tôi"];
@@ -281,7 +264,7 @@ export default function CineBot() {
 
             <div className="chat-messages" id="chatMessages">
               {messages.map((msg, index) => (
-                <div key={msg.id || index} className={`message ${msg.sender === 'user' ? 'user' : 'bot'}`}>
+                <div key={msg.id || index} className={\`message \${msg.sender === 'user' ? 'user' : 'bot'}\`}>
                   <div className="msg-avatar">
                     {msg.sender === 'user' ? (
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -298,39 +281,41 @@ export default function CineBot() {
                     {(!msg.type || msg.type === 'text') && (
                       <div className="bubble">
                         {msg.text}
+                      </div>
+                    )}
 
-                        {msg.movieData && (
-                          <div className="movie-cards mt-2">
-                            <div className="movie-card" onClick={() => navigate(`/movies/${msg.movieData?.id}`)}>
-                              <div className="movie-poster">
-                                {msg.movieData.poster ? (
-                                  <img src={msg.movieData.poster} alt={msg.movieData.title} />
-                                ) : (
-                                  <div style={{width:'100%', height:'100%', background:'linear-gradient(135deg, oklch(35% 0.15 20), oklch(25% 0.12 350))', display:'flex', alignItems:'center', justifyContent:'center'}}>
-                                    <Film className="text-white/20 w-12 h-12" />
-                                  </div>
-                                )}
-                                <span className="rating">⭐ {msg.movieData.rating || 'N/A'}</span>
-                              </div>
-                              <div className="movie-info">
-                                <h4>{msg.movieData.title}</h4>
-                                <p>{msg.movieData.genre || 'Phim rạp'}</p>
-                                <div className="quick-actions mt-2 mb-1 px-1">
-                                  <button 
-                                    className="quick-btn w-full flex justify-center items-center gap-1 bg-[var(--accent)] text-black border-none py-1.5 rounded-lg font-bold"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setInputText(`Đặt vé phim ${msg.movieData?.title}`);
-                                      setTimeout(() => handleSend(`Đặt vé phim ${msg.movieData?.title}`), 100);
-                                    }}
-                                  >
-                                    <Ticket size={14} /> Mua vé
-                                  </button>
+                    {msg.type === 'movieCard' && msg.movieData && (
+                      <div className="bubble p-0 overflow-hidden bg-transparent">
+                        <div className="movie-cards">
+                          <div className="movie-card" onClick={() => navigate(\`/movies/\${msg.movieData?.id}\`)}>
+                            <div className="movie-poster">
+                              {msg.movieData.poster ? (
+                                <img src={msg.movieData.poster} alt={msg.movieData.title} />
+                              ) : (
+                                <div style={{width:'100%', height:'100%', background:'linear-gradient(135deg, oklch(35% 0.15 20), oklch(25% 0.12 350))', display:'flex', alignItems:'center', justifyContent:'center'}}>
+                                  <Film className="text-white/20 w-12 h-12" />
                                 </div>
+                              )}
+                              <span className="rating">⭐ {msg.movieData.rating || 'N/A'}</span>
+                            </div>
+                            <div className="movie-info">
+                              <h4>{msg.movieData.title}</h4>
+                              <p>{msg.movieData.genre || 'Phim rạp'}</p>
+                              <div className="quick-actions mt-2 mb-1 px-1">
+                                <button 
+                                  className="quick-btn w-full flex justify-center items-center gap-1 bg-[var(--accent)] text-black border-none py-1.5 rounded-lg font-bold"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setInputText(\`Đặt vé phim \${msg.movieData?.title}\`);
+                                    setTimeout(() => handleSend(\`Đặt vé phim \${msg.movieData?.title}\`), 100);
+                                  }}
+                                >
+                                  <Ticket size={14} /> Mua vé
+                                </button>
                               </div>
                             </div>
                           </div>
-                        )}
+                        </div>
                       </div>
                     )}
 
@@ -342,7 +327,7 @@ export default function CineBot() {
                             <button 
                               key={i} 
                               className="showtime-btn"
-                              onClick={() => navigate(`/movies/${msg.movieId}`)}
+                              onClick={() => navigate(\`/movies/\${msg.movieId}\`)}
                             >
                               {time}
                             </button>
@@ -435,3 +420,7 @@ export default function CineBot() {
     </div>
   );
 }
+`;
+
+fs.writeFileSync('frontendcinema-v2/src/components/CineBot.tsx', code);
+console.log('CineBot.tsx updated successfully.');

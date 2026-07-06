@@ -243,4 +243,56 @@ public class EmailService {
         }
         return sb.toString();
     }
+
+    /**
+     * Gửi email quên mật khẩu với mật khẩu tạm thời
+     */
+    @org.springframework.scheduling.annotation.Async
+    public void sendForgotPasswordEmail(String toEmail, String tempPassword) throws MessagingException, UnsupportedEncodingException {
+        if (toEmail == null || toEmail.isBlank()) {
+            throw new RuntimeException("Không tìm thấy email người nhận!");
+        }
+
+        String htmlBody = buildForgotPasswordHtml(tempPassword);
+
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+        helper.setFrom(senderEmail, "CineVerse 🎬");
+        helper.setTo(toEmail);
+        helper.setSubject("🔒 Cấp lại mật khẩu mới - CineVerse");
+        helper.setText(htmlBody, true);
+
+        mailSender.send(message);
+        System.out.println("✅ Đã gửi email cấp lại mật khẩu tới: " + toEmail);
+    }
+
+    private String buildForgotPasswordHtml(String tempPassword) {
+        return "<!DOCTYPE html>" +
+                "<html lang=\"vi\"><head><meta charset=\"UTF-8\"/>" +
+                "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1.0\"/>" +
+                "<title>Khôi Phục Mật Khẩu</title></head>" +
+                "<body style=\"margin:0;padding:0;background-color:#f3f4f6;font-family:'Segoe UI',Arial,sans-serif;\">" +
+                "<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background:#f3f4f6;padding:40px 20px;\">" +
+                "<tr><td align=\"center\">" +
+                "<table width=\"600\" cellpadding=\"0\" cellspacing=\"0\" style=\"max-width:600px;width:100%;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10);\">" +
+                "<tr><td style=\"background:linear-gradient(135deg,#dc2626 0%,#f97316 50%,#fbbf24 100%);padding:30px;text-align:center;\">" +
+                "<h1 style=\"margin:0;color:#ffffff;font-size:26px;letter-spacing:1px;\">🎬 CineVerse</h1>" +
+                "</td></tr>" +
+                "<tr><td style=\"padding:40px 40px 30px;\">" +
+                "<h2 style=\"margin:0 0 16px;font-size:22px;color:#111827;\">Yêu cầu khôi phục mật khẩu</h2>" +
+                "<p style=\"margin:0 0 24px;color:#4b5563;font-size:15px;line-height:1.6;\">Chúng tôi nhận được yêu cầu cấp lại mật khẩu cho tài khoản của bạn. Dưới đây là mật khẩu tạm thời để bạn đăng nhập:</p>" +
+                "<div style=\"background:#f9fafb;border:1px dashed #d1d5db;border-radius:12px;padding:20px;text-align:center;margin-bottom:24px;\">" +
+                "<p style=\"margin:0 0 8px;color:#6b7280;font-size:13px;text-transform:uppercase;font-weight:600;\">Mật Khẩu Mới Của Bạn</p>" +
+                "<p style=\"margin:0;color:#dc2626;font-size:32px;font-weight:800;letter-spacing:4px;\">" + tempPassword + "</p>" +
+                "</div>" +
+                "<p style=\"margin:0 0 16px;color:#4b5563;font-size:15px;line-height:1.6;\">Hãy sử dụng mật khẩu trên để đăng nhập. <strong>Lưu ý:</strong> Bạn nên đổi lại mật khẩu ngay sau khi đăng nhập thành công để đảm bảo an toàn.</p>" +
+                "</td></tr>" +
+                "<tr><td style=\"padding:20px 40px;background:#fffbeb;border-top:1px solid #fde68a;\">" +
+                "<p style=\"margin:0;color:#92400e;font-size:13px;line-height:1.5;\">Nếu bạn không yêu cầu khôi phục mật khẩu, vui lòng bỏ qua email này hoặc liên hệ ngay với CSKH của CineVerse.</p>" +
+                "</td></tr>" +
+                "</table>" +
+                "<p style=\"text-align:center;color:#9ca3af;font-size:13px;margin-top:20px;\">© 2026 CineVerse. Cảm ơn bạn đã đồng hành!</p>" +
+                "</td></tr></table>" +
+                "</body></html>";
+    }
 }

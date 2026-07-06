@@ -1,8 +1,8 @@
 import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Ticket, Calendar, Clock, MapPin, Star, ArrowLeft, X, CheckCircle, MessageSquare } from 'lucide-react';
+import { Ticket, Calendar, Clock, MapPin, Star, ArrowLeft, X, CheckCircle, MessageSquare, Tag, Copy, Scissors } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import axiosClient from '../api/axiosClient';

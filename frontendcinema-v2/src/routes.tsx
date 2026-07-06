@@ -18,6 +18,8 @@ import ScratchCardGame from "./pages/ScratchCardGame";
 import EggSmashGame from "./pages/EggSmashGame";
 import LuckyEnvelopeGame from "./pages/LuckyEnvelopeGame";
 import SlotMachineGame from "./pages/SlotMachineGame";
+import Promotions from "./pages/Promotions";
+import ChangePassword from "./pages/ChangePassword";
 
 
 export const router = createBrowserRouter([
@@ -50,8 +52,20 @@ export const router = createBrowserRouter([
     Component: Register,
   },
   {
+    path: "/change-password",
+    Component: ChangePassword,
+  },
+  {
     path: "/booking-history",
     Component: BookingHistory,
+  },
+  {
+    path: "/booking-history/wallet",
+    Component: BookingHistory,
+  },
+  {
+    path: "/promotions",
+    Component: Promotions,
   },
   {
     path: "/membership",

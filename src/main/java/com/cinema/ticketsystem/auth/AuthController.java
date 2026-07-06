@@ -1,5 +1,7 @@
 package com.cinema.ticketsystem.auth;
 
+import com.cinema.ticketsystem.dto.ChangePasswordRequest;
+import com.cinema.ticketsystem.dto.ForgotPasswordRequest;
 import com.cinema.ticketsystem.dto.LoginRequest;
 import com.cinema.ticketsystem.dto.RegisterRequest;
 import com.cinema.ticketsystem.entity.user.User;
@@ -49,6 +51,7 @@ public class AuthController {
             response.put("token", "Bearer " + token);
             response.put("role", user.getRole().name());
             response.put("username", user.getUsername());
+            response.put("isTemporaryPassword", user.getIsTemporaryPassword() != null ? user.getIsTemporaryPassword() : false);
             
             Map<String, String> userDetails = new HashMap<>();
             userDetails.put("name", user.getFullName() != null ? user.getFullName() : user.getUsername());
@@ -58,6 +61,26 @@ public class AuthController {
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             return ResponseEntity.status(401).body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        try {
+            authService.forgotPassword(request.getEmail());
+            return ResponseEntity.ok(Map.of("message", "Mật khẩu mới đã được gửi vào email của bạn. Vui lòng kiểm tra hộp thư!"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest request) {
+        try {
+            authService.changePassword(request);
+            return ResponseEntity.ok(Map.of("message", "Đổi mật khẩu thành công!"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 }

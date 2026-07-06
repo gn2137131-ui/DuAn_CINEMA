@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<!-- skill:chrome -->
+<style>
+/* Credit line — bottom-right */
+.design-ui-credit {
+  position: fixed;
+  bottom: 12px;
+  right: 12px;
+  font: 11px/1 system-ui, sans-serif;
+  color: rgba(128,128,128,0.5);
+  pointer-events: none;
+  z-index: 2147483647;
+  transition: opacity 0.4s ease;
+  user-select: none;
+  letter-spacing: 0.02em;
+}
+
+/* Hide chrome on touch devices */
+@media (hover: none) {
+  .design-ui-credit { display: none; }
+}
+
+/* Print fixes */
+@media print {
+  * {
+    transition: none !important;
+    animation: none !important;
+    box-shadow: none !important;
+  }
+  body {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  .design-ui-credit { display: none !important; }
+}
+
+</style>
+<script>
+(function () {
+    // Design-ui pages are single compositions, so the whole body is editable.
+    function markEditable() {
+        document.body.classList.add('artifact-editable');
+    }
+
+    // Credit badge with idle-fade. Hover devices only.
+    function initChromeUI() {
+        if (!matchMedia('(hover: hover)').matches) return;
+
+        var credit = document.createElement('div');
+        credit.className = 'design-ui-credit';
+        credit.setAttribute('aria-hidden', 'true');
+        credit.innerHTML = '\u{1F49C} by ClickUp Brain';
+        document.body.appendChild(credit);
+
+        var timer = null;
+        var fade = function (out) { credit.style.opacity = out ? '0' : ''; };
+        fade(true);
+        var show = function () {
+            fade(false);
+            clearTimeout(timer);
+            timer = setTimeout(function () { fade(true); }, 3000);
+        };
+        document.addEventListener('mousemove', show);
+        show();
+    }
+
+    function init() {
+        markEditable();
+        initChromeUI();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();
+
+</script>
+<!-- /skill:chrome -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CineChat - Đặt Vé Xem Phim Online</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg-deep: oklch(14% 0.012 280);
+  --bg-surface: oklch(18% 0.01 280);
+  --bg-elevated: oklch(22% 0.008 280);
+  --bg-chat: oklch(20% 0.009 280);
+  --accent: oklch(75% 0.18 70);
+  --accent-dim: oklch(60% 0.14 70);
+  --accent-glow: oklch(75% 0.18 70 / 0.15);
+  --text-primary: oklch(92% 0.005 280);
+  --text-secondary: oklch(65% 0.008 280);
+  --text-muted: oklch(50% 0.006 280);
+  --bot-bubble: oklch(24% 0.01 280);
+  --user-bubble: oklch(35% 0.06 250);
+  --border: oklch(28% 0.008 280);
+  --success: oklch(72% 0.15 155);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  line-height: 1.5;
+  font-optical-sizing: auto;
+}
+
+.chat-container {
+  width: 100%;
+  max-width: 420px;
+  height: 680px;
+  background: var(--bg-surface);
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 
+    0 0 0 1px oklch(25% 0.01 280),
+    0 24px 80px oklch(0% 0 0 / 0.5),
+    0 8px 24px oklch(0% 0 0 / 0.3);
+}
+
+/* Header */
+.chat-header {
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border);
+}
+
+.bot-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-dim));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.bot-avatar svg {
+  width: 22px;
+  height: 22px;
+  color: oklch(15% 0.01 280);
+}
+
+.header-info {
+  flex: 1;
+}
+
+.header-info h1 {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.header-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--success);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.header-status span {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.header-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.header-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.header-btn:hover {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+}
+
+/* Messages */
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.message {
+  display: flex;
+  gap: 8px;
+  max-width: 88%;
+  animation: messageIn 0.4s var(--ease-out-expo) backwards;
+}
+
+@keyframes messageIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+.message.bot {
+  align-self: flex-start;
+}
+
+.message.user {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.msg-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-dim));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.msg-avatar svg {
+  width: 14px;
+  height: 14px;
+  color: oklch(15% 0.01 280);
+}
+
+.message.user .msg-avatar {
+  background: var(--user-bubble);
+}
+
+.bubble {
+  padding: 12px 16px;
+  border-radius: 16px;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.message.bot .bubble {
+  background: var(--bot-bubble);
+  border-bottom-left-radius: 4px;
+  color: var(--text-primary);
+}
+
+.message.user .bubble {
+  background: var(--user-bubble);
+  border-bottom-right-radius: 4px;
+  color: var(--text-primary);
+}
+
+.msg-time {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+  padding: 0 4px;
+}
+
+.message.user .msg-time {
+  text-align: right;
+}
+
+/* Movie Cards */
+.movie-cards {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 8px 0;
+  scrollbar-width: none;
+}
+
+.movie-cards::-webkit-scrollbar {
+  display: none;
+}
+
+.movie-card {
+  min-width: 140px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--bg-elevated);
+  cursor: pointer;
+  transition: transform 0.2s var(--ease-out-expo), box-shadow 0.2s;
+  flex-shrink: 0;
+}
+
+.movie-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px oklch(0% 0 0 / 0.3);
+}
+
+.movie-poster {
+  width: 100%;
+  height: 180px;
+  position: relative;
+  overflow: hidden;
+}
+
+.movie-poster img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.movie-poster .rating {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: oklch(0% 0 0 / 0.7);
+  backdrop-filter: blur(4px);
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.movie-info {
+  padding: 10px 12px;
+}
+
+.movie-info h4 {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  margin-bottom: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.movie-info p {
+  font-size: 0.6875rem;
+  color: var(--text-secondary);
+}
+
+/* Showtime Selection */
+.showtime-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.showtime-btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.showtime-btn:hover {
+  border-color: var(--accent);
+  background: var(--accent-glow);
+  color: var(--accent);
+}
+
+.showtime-btn.selected {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: oklch(15% 0.01 280);
+}
+
+/* Seat Map */
+.seat-map {
+  margin-top: 10px;
+  padding: 12px;
+  background: var(--bg-deep);
+  border-radius: 12px;
+}
+
+.screen-indicator {
+  text-align: center;
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.screen-indicator::after {
+  content: '';
+  display: block;
+  width: 70%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  margin: 6px auto 0;
+  border-radius: 2px;
+}
+
+.screen-indicator span {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.seat-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+}
+
+.seat-row {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.row-label {
+  width: 16px;
+  font-size: 0.625rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.seat {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.seat:hover:not(.taken):not(.selected) {
+  border-color: var(--accent);
+  background: var(--accent-glow);
+}
+
+.seat.selected {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.seat.taken {
+  background: oklch(30% 0.01 280);
+  border-color: oklch(30% 0.01 280);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.seat-legend {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.625rem;
+  color: var(--text-secondary);
+}
+
+.legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.legend-dot.available {
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+}
+
+.legend-dot.chosen {
+  background: var(--accent);
+}
+
+.legend-dot.occupied {
+  background: oklch(30% 0.01 280);
+  opacity: 0.5;
+}
+
+/* Quick Actions */
+.quick-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.quick-btn {
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.quick-btn:hover {
+  border-color: var(--accent);
+  background: var(--accent-glow);
+  color: var(--accent);
+}
+
+/* Input Area */
+.chat-input {
+  padding: 16px;
+  background: var(--bg-elevated);
+  border-top: 1px solid var(--border);
+}
+
+.input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-deep);
+  border-radius: 14px;
+  padding: 6px 6px 6px 16px;
+  border: 1px solid var(--border);
+  transition: border-color 0.2s;
+}
+
+.input-wrapper:focus-within {
+  border-color: var(--accent-dim);
+}
+
+.input-wrapper input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-family: inherit;
+}
+
+.input-wrapper input::placeholder {
+  color: var(--text-muted);
+}
+
+.send-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: none;
+  background: var(--accent);
+  color: oklch(15% 0.01 280);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s, opacity 0.15s;
+  flex-shrink: 0;
+}
+
+.send-btn:hover {
+  transform: scale(1.05);
+}
+
+.send-btn:active {
+  transform: scale(0.95);
+}
+
+/* Typing indicator */
+.typing-indicator {
+  display: flex;
+  gap: 4px;
+  padding: 12px 16px;
+  align-items: center;
+}
+
+.typing-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  animation: typing 1.4s ease-in-out infinite;
+}
+
+.typing-dot:nth-child(2) { animation-delay: 0.15s; }
+.typing-dot:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes typing {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-4px); opacity: 1; }
+}
+
+/* Booking Summary */
+.booking-summary {
+  margin-top: 8px;
+  padding: 14px;
+  background: var(--bg-deep);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+}
+
+.summary-row:not(:last-child) {
+  border-bottom: 1px solid oklch(25% 0.005 280);
+}
+
+.summary-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.summary-value {
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.summary-total {
+  color: var(--accent);
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.confirm-btn {
+  width: 100%;
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  background: var(--accent);
+  color: oklch(15% 0.01 280);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.15s, opacity 0.15s;
+}
+
+.confirm-btn:hover {
+  transform: translateY(-1px);
+}
+
+.confirm-btn:active {
+  transform: translateY(0);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  body {
+    padding: 0;
+    align-items: stretch;
+  }
+  .chat-container {
+    max-width: 100%;
+    height: 100vh;
+    border-radius: 0;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="chat-container">
+  <div class="chat-header">
+    <div class="bot-avatar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15.6 11.6L22 7v10l-6.4-4.5"/>
+        <rect x="2" y="7" width="14" height="10" rx="2"/>
+      </svg>
+    </div>
+    <div class="header-info">
+      <h1>CineChat</h1>
+      <div class="header-status">
+        <div class="status-dot"></div>
+        <span>Sẵn sàng hỗ trợ</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="header-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+        </svg>
+      </button>
+      <button class="header-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="chat-messages" id="chatMessages">
+    <!-- Bot greeting -->
+    <div class="message bot" style="animation-delay: 0.1s">
+      <div class="msg-avatar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15.6 11.6L22 7v10l-6.4-4.5"/>
+          <rect x="2" y="7" width="14" height="10" rx="2"/>
+        </svg>
+      </div>
+      <div>
+        <div class="bubble">
+          Xin chào! 🎬 Tôi là CineChat, trợ lý đặt vé xem phim của bạn. Hôm nay bạn muốn xem phim gì?
+          <div class="quick-actions">
+            <button class="quick-btn" onclick="sendQuickMessage('Phim đang chiếu')">🔥 Đang chiếu</button>
+            <button class="quick-btn" onclick="sendQuickMessage('Phim sắp chiếu')">🆕 Sắp chiếu</button>
+            <button class="quick-btn" onclick="sendQuickMessage('Đề xuất cho tôi')">✨ Đề xuất</button>
+          </div>
+        </div>
+        <div class="msg-time">14:00</div>
+      </div>
+    </div>
+
+    <!-- User message -->
+    <div class="message user" style="animation-delay: 0.2s">
+      <div class="msg-avatar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+        </svg>
+      </div>
+      <div>
+        <div class="bubble">Cho tôi xem phim đang chiếu đi</div>
+        <div class="msg-time">14:01</div>
+      </div>
+    </div>
+
+    <!-- Bot movie recommendations -->
+    <div class="message bot" style="animation-delay: 0.3s">
+      <div class="msg-avatar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15.6 11.6L22 7v10l-6.4-4.5"/>
+          <rect x="2" y="7" width="14" height="10" rx="2"/>
+        </svg>
+      </div>
+      <div>
+        <div class="bubble">
+          Đây là các phim đang chiếu hot nhất tuần này 🍿
+          <div class="movie-cards">
+            <div class="movie-card" onclick="selectMovie('Deadpool & Wolverine')">
+              <div class="movie-poster">
+                <div style="width:100%;height:100%;background:linear-gradient(135deg, oklch(35% 0.15 20), oklch(25% 0.12 350));display:flex;align-items:center;justify-content:center;font-size:2.5rem">⚔️</div>
+                <span class="rating">⭐ 8.7</span>
+              </div>
+              <div class="movie-info">
+                <h4>Deadpool & Wolverine</h4>
+                <p>Hành động · 2h 08p</p>
+              </div>
+            </div>
+            <div class="movie-card" onclick="selectMovie('Inside Out 2')">
+              <div class="movie-poster">
+                <div style="width:100%;height:100%;background:linear-gradient(135deg, oklch(65% 0.2 280), oklch(55% 0.18 320));display:flex;align-items:center;justify-content:center;font-size:2.5rem">🧠</div>
+                <span class="rating">⭐ 8.2</span>
+              </div>
+              <div class="movie-info">
+                <h4>Inside Out 2</h4>
+                <p>Hoạt hình · 1h 40p</p>
+              </div>
+            </div>
+            <div class="movie-card" onclick="selectMovie('Twisters')">
+              <div class="movie-poster">
+                <div style="width:100%;height:100%;background:linear-gradient(135deg, oklch(40% 0.08 220), oklch(30% 0.1 200));display:flex;align-items:center;justify-content:center;font-size:2.5rem">🌪️</div>
+                <span class="rating">⭐ 7.5</span>
+              </div>
+              <div class="movie-info">
+                <h4>Twisters</h4>
+                <p>Phiêu lưu · 2h 02p</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="msg-time">14:01</div>
+      </div>
+    </div>
+
+    <!-- User selects movie -->
+    <div class="message user" style="animation-delay: 0.4s">
+      <div class="msg-avatar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+        </svg>
+      </div>
+      <div>
+        <div class="bubble">Đặt vé Deadpool & Wolverine</div>
+        <div class="msg-time">14:02</div>
+      </div>
+    </div>
+
+    <!-- Bot showtime -->
+    <div class="message bot" style="animation-delay: 0.5s">
+      <div class="msg-avatar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15.6 11.6L22 7v10l-6.4-4.5"/>
+          <rect x="2" y="7" width="14" height="10" rx="2"/>
+        </svg>
+      </div>
+      <div>
+        <div class="bubble">
+          Tuyệt vời! 🎉 <strong>Deadpool & Wolverine</strong> tại CGV Vincom Center. Chọn suất chiếu:
+          <div class="showtime-grid">
+            <button class="showtime-btn" onclick="selectShowtime(this)">14:30</button>
+            <button class="showtime-btn" onclick="selectShowtime(this)">16:45</button>
+            <button class="showtime-btn selected" onclick="selectShowtime(this)">19:00</button>
+            <button class="showtime-btn" onclick="selectShowtime(this)">21:15</button>
+            <button class="showtime-btn" onclick="selectShowtime(this)">23:30</button>
+          </div>
+        </div>
+        <div class="msg-time">14:02</div>
+      </div>
+    </div>
+
+    <!-- Bot seat selection -->
+    <div class="message bot" style="animation-delay: 0.6s">
+      <div class="msg-avatar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15.6 11.6L22 7v10l-6.4-4.5"/>
+          <rect x="2" y="7" width="14" height="10" rx="2"/>
+        </svg>
+      </div>
+      <div>
+        <div class="bubble">
+          Suất 19:00 🕖 Phòng chiếu 3. Chọn ghế của bạn:
+          <div class="seat-map">
+            <div class="screen-indicator">
+              <span>Màn hình</span>
+            </div>
+            <div class="seat-rows">
+              <div class="seat-row">
+                <span class="row-label">A</span>
+                <div class="seat taken"></div>
+                <div class="seat taken"></div>
+                <div class="seat" onclick="toggleSeat(this)"></div>
+                <div class="seat" onclick="toggleSeat(this)"></div>
+                <div class="seat" onclick="toggleSeat(this)"></div>
+                <div class="seat taken"></div>
+                <div class="seat" onclick="toggleSeat(this)"></div>
+                <div class="seat" onclick="toggleSeat(this)"></div>
+              </div>
+              <div class="seat-row">
+                <span class="row-label">B</span>
+                <div class="seat" onclick="toggleSeat(this)"></div>
+                <div class="seat taken"></div>
+                <div class="seat" onclick="toggleSeat(this)"></div>
+                <div class="seat" onclick="toggleSeat(this)"></div>
+                <div class="seat selected" onclick="toggleSeat(this)"></div>
+                <div class="seat selected" onclick="toggleSeat(this)"></div>
+                <div class="seat" onclick="toggleSeat(this)"></div>
+                <div class="seat taken"></div>
+              </div>
+              <div class="seat-row">
+                <span class="row-label">C</span>
+                <div class="seat" onclick="toggleSeat(this)"></div>
+                <div class="seat" onclick="toggleSeat(this)"></div>
+                <div class="seat taken"></div>
+                <div class="seat" onclick="toggleSeat(this)"></div>
+                <div class="seat" onclick="toggleSeat(this)"></div>
+                <div class="seat" onclick="toggleSeat(this)"></div>
+                <div class="seat taken"></div>
+                <div class="seat" onclick="toggleSeat(this)"></div>
+              </div>
+              <div class="seat-row">
+                <span class="row-label">D</span>
+                <div class="seat" onclick="toggleSeat(this)"></div>
+                <div class="seat" onclick="toggleSeat(this)"></div>
+                <div class="seat" onclick="toggleSeat(this)"></div>
+                <div class="seat taken"></div>
+                <div class="seat" onclick="toggleSeat(this)"></div>
+                <div class="seat" onclick="toggleSeat(this)"></div>
+                <div class="seat" onclick="toggleSeat(this)"></div>
+                <div class="seat" onclick="toggleSeat(this)"></div>
+              </div>
+            </div>
+            <div class="seat-legend">
+              <div class="legend-item"><div class="legend-dot available"></div>Trống</div>
+              <div class="legend-item"><div class="legend-dot chosen"></div>Đã chọn</div>
+              <div class="legend-item"><div class="legend-dot occupied"></div>Đã đặt</div>
+            </div>
+          </div>
+        </div>
+        <div class="msg-time">14:03</div>
+      </div>
+    </div>
+
+    <!-- Booking Summary -->
+    <div class="message bot" style="animation-delay: 0.7s">
+      <div class="msg-avatar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15.6 11.6L22 7v10l-6.4-4.5"/>
+          <rect x="2" y="7" width="14" height="10" rx="2"/>
+        </svg>
+      </div>
+      <div>
+        <div class="bubble">
+          Tóm tắt đặt vé của bạn 🎟️
+          <div class="booking-summary">
+            <div class="summary-row">
+              <span class="summary-label">Phim</span>
+              <span class="summary-value">Deadpool & Wolverine</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">Rạp</span>
+              <span class="summary-value">CGV Vincom</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">Suất chiếu</span>
+              <span class="summary-value">19:00 · 06/07/2026</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">Ghế</span>
+              <span class="summary-value">B5, B6</span>
+            </div>
+            <div class="summary-row">
+              <span class="summary-label">Tổng tiền</span>
+              <span class="summary-value summary-total">180.000đ</span>
+            </div>
+          </div>
+          <button class="confirm-btn" onclick="confirmBooking()">Xác nhận đặt vé</button>
+        </div>
+        <div class="msg-time">14:03</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="chat-input">
+    <div class="input-wrapper">
+      <input type="text" placeholder="Nhập tin nhắn..." id="messageInput" onkeypress="handleKeyPress(event)">
+      <button class="send-btn" onclick="sendMessage()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleSeat(el) {
+  if (el.classList.contains('taken')) return;
+  el.classList.toggle('selected');
+}
+
+function selectShowtime(el) {
+  document.querySelectorAll('.showtime-btn').forEach(btn => btn.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function selectMovie(name) {
+  sendQuickMessage('Đặt vé ' + name);
+}
+
+function sendQuickMessage(text) {
+  const messagesDiv = document.getElementById('chatMessages');
+  const msgHTML = `
+    <div class="message user" style="animation-delay: 0s">
+      <div class="msg-avatar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+        </svg>
+      </div>
+      <div>
+        <div class="bubble">${text}</div>
+        <div class="msg-time">${new Date().getHours()}:${String(new Date().getMinutes()).padStart(2,'0')}</div>
+      </div>
+    </div>
+  `;
+  messagesDiv.insertAdjacentHTML('beforeend', msgHTML);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  
+  setTimeout(() => showTyping(), 500);
+}
+
+function sendMessage() {
+  const input = document.getElementById('messageInput');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  sendQuickMessage(text);
+}
+
+function handleKeyPress(e) {
+  if (e.key === 'Enter') sendMessage();
+}
+
+function showTyping() {
+  const messagesDiv = document.getElementById('chatMessages');
+  const typingHTML = `
+    <div class="message bot" id="typingMsg">
+      <div class="msg-avatar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15.6 11.6L22 7v10l-6.4-4.5"/>
+          <rect x="2" y="7" width="14" height="10" rx="2"/>
+        </svg>
+      </div>
+      <div class="bubble">
+        <div class="typing-indicator">
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+          <div class="typing-dot"></div>
+        </div>
+      </div>
+    </div>
+  `;
+  messagesDiv.insertAdjacentHTML('beforeend', typingHTML);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  
+  setTimeout(() => {
+    const typing = document.getElementById('typingMsg');
+    if (typing) typing.remove();
+    showBotReply();
+  }, 1500);
+}
+
+function showBotReply() {
+  const messagesDiv = document.getElementById('chatMessages');
+  const replies = [
+    'Để tôi tìm cho bạn nhé! 🔍',
+    'Bạn muốn xem ở rạp nào? CGV, Lotte hay Galaxy?',
+    'Tôi có thể giúp bạn chọn ghế VIP nếu muốn trải nghiệm tốt hơn ✨',
+    'Phim này đang rất hot, bạn nên đặt sớm nhé!'
+  ];
+  const reply = replies[Math.floor(Math.random() * replies.length)];
+  
+  const msgHTML = `
+    <div class="message bot" style="animation-delay: 0s">
+      <div class="msg-avatar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15.6 11.6L22 7v10l-6.4-4.5"/>
+          <rect x="2" y="7" width="14" height="10" rx="2"/>
+        </svg>
+      </div>
+      <div>
+        <div class="bubble">${reply}</div>
+        <div class="msg-time">${new Date().getHours()}:${String(new Date().getMinutes()).padStart(2,'0')}</div>
+      </div>
+    </div>
+  `;
+  messagesDiv.insertAdjacentHTML('beforeend', msgHTML);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+function confirmBooking() {
+  const messagesDiv = document.getElementById('chatMessages');
+  const msgHTML = `
+    <div class="message bot" style="animation-delay: 0s">
+      <div class="msg-avatar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15.6 11.6L22 7v10l-6.4-4.5"/>
+          <rect x="2" y="7" width="14" height="10" rx="2"/>
+        </svg>
+      </div>
+      <div>
+        <div class="bubble">
+          ✅ <strong>Đặt vé thành công!</strong><br><br>
+          Mã vé: <strong>CINE-2026-8847</strong><br>
+          Vui lòng đến rạp trước 15 phút. Chúc bạn xem phim vui vẻ! 🎬🍿
+        </div>
+        <div class="msg-time">${new Date().getHours()}:${String(new Date().getMinutes()).padStart(2,'0')}</div>
+      </div>
+    </div>
+  `;
+  messagesDiv.insertAdjacentHTML('beforeend', msgHTML);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+// Auto scroll to bottom
+document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+</script>
+</body>
+</html>

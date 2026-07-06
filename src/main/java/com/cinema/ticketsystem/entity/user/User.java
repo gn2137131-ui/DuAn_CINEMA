@@ -38,6 +38,9 @@ public class User {
     @Column(nullable = false, columnDefinition = "int default 0")
     private Integer loyaltyPoints = 0;
 
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private Boolean isTemporaryPassword = false;
+
     // Liên kết với bảng membership_tiers để vẽ ERD (Denormalization)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "tier_id")
