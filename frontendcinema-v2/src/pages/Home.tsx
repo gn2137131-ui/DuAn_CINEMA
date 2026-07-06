@@ -51,7 +51,7 @@ export default function Home() {
 
   // Fetch movies with proper poster URLs, banner, and status
   useEffect(() => {
-    fetch('/api/movies')
+    fetch('https://duancinema-production.up.railway.app/api/movies')
       .then(res => res.json())
       .then((data: any[]) => {
         const formatted = data.map(m => {
@@ -77,7 +77,7 @@ export default function Home() {
 
   // Fetch banner config từ backend (do admin cấu hình)
   useEffect(() => {
-    fetch('/api/banner-config')
+    fetch('https://duancinema-production.up.railway.app/api/banner-config')
       .then(res => res.json())
       .then((data: any[]) => {
         if (data && data.length > 0) {
@@ -97,7 +97,7 @@ export default function Home() {
 
   // Fetch promotions from backend
   useEffect(() => {
-    fetch('/api/discount-codes/public')
+    fetch('https://duancinema-production.up.railway.app/api/discount-codes/public')
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {

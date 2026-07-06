@@ -64,7 +64,7 @@ export default function CineBot() {
 
   useEffect(() => {
     const BACKEND_IMAGE_URL = import.meta.env.VITE_BACKEND_URL || '';
-    fetch('/api/movies')
+    fetch('https://duancinema-production.up.railway.app/api/movies')
       .then(res => res.json())
       .then(data => {
         const formatted = data.map((m: any) => {

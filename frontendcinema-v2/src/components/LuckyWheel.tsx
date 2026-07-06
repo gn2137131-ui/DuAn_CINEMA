@@ -28,7 +28,7 @@ export default function LuckyWheel() {
       setHasSpunToday(true);
     }
 
-    fetch('/api/discount-codes/public')
+    fetch('https://duancinema-production.up.railway.app/api/discount-codes/public')
       .then(res => res.json())
       .then((data: any[]) => {
         if (data && data.length > 0) {
