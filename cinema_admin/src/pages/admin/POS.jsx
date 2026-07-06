@@ -19,7 +19,10 @@ export default function POS() {
   const [isProcessing, setIsProcessing] = useState(false);
   
   // Date filter state (Default to today)
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const getLocalDateString = (dateObj) => {
+    return `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+  };
+  const [selectedDate, setSelectedDate] = useState(getLocalDateString(new Date()));
   
   // Checkout states
   const [customerName, setCustomerName] = useState('');
@@ -334,7 +337,7 @@ export default function POS() {
     const d = new Date();
     d.setDate(d.getDate() + i);
     return {
-      date: d.toISOString().split('T')[0],
+      date: getLocalDateString(d),
       display: i === 0 ? 'Hôm nay' : i === 1 ? 'Ngày mai' : d.toLocaleDateString('vi-VN', { weekday: 'short', day: '2-digit', month: '2-digit' })
     };
   });
