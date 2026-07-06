@@ -63,10 +63,8 @@ export default function ChangePassword() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-orange-50 to-yellow-50 dark:from-slate-950 dark:to-slate-900 dark:text-white">
-
-      <div className="container mx-auto px-4 py-12">
-        <div className="max-w-md mx-auto">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-orange-50 to-yellow-50 dark:from-slate-950 dark:to-slate-900 dark:text-white px-4 py-8">
+      <div className="w-full max-w-md">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -185,7 +183,6 @@ export default function ChangePassword() {
             </form>
           </motion.div>
         </div>
-      </div>
     </div>
   );
 }
