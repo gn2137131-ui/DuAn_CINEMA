@@ -218,7 +218,7 @@ export function AddShowtime({ isOpen, onClose, onRefresh, preselectedMovieId }) 
       await axiosClient.post('/showtimes/batch', payload);
       onRefresh();
       onClose();
-      toast.error(`Đã gửi yêu cầu tạo suất chiếu. Tổng số ngày: ${generatedDates.length}. Tổng khung giờ mỗi ngày: ${formData.selectedTimes.length}.`);
+      toast.success(`Đã gửi yêu cầu tạo suất chiếu. Tổng số ngày: ${generatedDates.length}. Tổng khung giờ mỗi ngày: ${formData.selectedTimes.length}.`);
     } catch (err) {
       console.error("Lỗi Server chi tiết:", err.response);
       const serverError = err.response?.data;
