@@ -415,8 +415,8 @@ export default function MovieDetail() {
           <div className="bg-white dark:bg-slate-900">
             <div className="container mx-auto px-4">
               {/* Floating Poster & Basic Info */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
-                <div className="lg:col-span-3 -mt-32 relative z-20">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 mb-8 md:mb-12">
+                <div className="lg:col-span-3 -mt-16 md:-mt-32 relative z-20 max-w-[200px] md:max-w-none mx-auto md:mx-0">
                   <div className="rounded-xl overflow-hidden shadow-2xl border-4 border-white bg-white dark:bg-slate-900">
                     <ImageWithFallback
                       src={movie.posterUrl}
@@ -429,7 +429,7 @@ export default function MovieDetail() {
                 <div className="lg:col-span-9 pt-8 pb-4">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
-                      <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 dark:text-gray-100">{movie.title}</h1>
+                      <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-gray-100">{movie.title}</h1>
                       {movie.ageRestriction && (
                         <span className="bg-orange-500 text-white font-bold px-2 py-0.5 rounded text-sm">
                           {movie.ageRestriction}

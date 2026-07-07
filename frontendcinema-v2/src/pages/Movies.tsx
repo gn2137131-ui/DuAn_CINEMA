@@ -635,7 +635,7 @@ export default function Movies() {
                             exit={{ opacity: 0, height: 0 }}
                             className="overflow-hidden mb-8"
                         >
-                            <div className="bg-white dark:bg-[#111111] rounded-3xl shadow-xl p-6 md:p-8 border border-gray-100 dark:border-gray-800">
+                            <div className="bg-white dark:bg-[#111111] rounded-3xl shadow-xl p-4 md:p-8 border border-gray-100 dark:border-gray-800">
                                 <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100 dark:border-gray-800">
                                     <h3 className="font-black text-xl text-gray-900 dark:text-white flex items-center gap-3">
                                         <Filter className="w-5 h-5 text-orange-500" />

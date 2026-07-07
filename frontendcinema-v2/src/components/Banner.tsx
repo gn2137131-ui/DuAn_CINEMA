@@ -56,7 +56,7 @@ export default function Banner({ movies }: BannerProps) {
   };
 
   return (
-    <section className="relative h-[520px] overflow-hidden bg-black select-none">
+    <section className="relative h-[400px] md:h-[520px] overflow-hidden bg-black select-none">
       {/* Background image with slide animation */}
       <AnimatePresence initial={false} custom={direction} mode="sync">
         <motion.div
@@ -111,7 +111,7 @@ export default function Banner({ movies }: BannerProps) {
                 </span>
               </div>
 
-              <h1 className="text-4xl md:text-5xl font-black text-white mb-3 leading-tight drop-shadow-lg">
+              <h1 className="text-3xl md:text-5xl font-black mb-4 leading-tight drop-shadow-xl">
                 {movie.title}
               </h1>
 

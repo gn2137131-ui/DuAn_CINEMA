@@ -223,41 +223,41 @@ export default function Header() {
               {/* Mobile Menu Button */}
               <button
                 onClick={() => setShowMobileMenu(!showMobileMenu)}
-                className="md:hidden p-2 hover:bg-white/20 rounded-full transition-colors"
+                className="md:hidden p-2 hover:bg-white/20 rounded-full transition-colors z-50 relative"
               >
-                {showMobileMenu ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                {showMobileMenu ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
             </div>
           </div>
 
-          {/* Mobile Menu */}
-          {showMobileMenu && (
-            <div className="md:hidden mt-4 py-4 border-t border-white/20">
-              <nav className="flex flex-col gap-3">
-                <Link to="/" onClick={() => setShowMobileMenu(false)} className="hover:opacity-80 transition-opacity py-2">
-                  Trang Chủ
+          {/* Mobile Menu Overlay */}
+          <div className={`md:hidden fixed inset-0 z-40 bg-black/95 backdrop-blur-xl transition-transform duration-300 ease-in-out ${showMobileMenu ? 'translate-x-0' : 'translate-x-full'}`}>
+            <div className="flex flex-col h-full px-6 pt-28 pb-6 overflow-y-auto">
+              <nav className="flex flex-col gap-6 text-xl">
+                <Link to="/" onClick={() => setShowMobileMenu(false)} className="hover:text-red-500 transition-colors py-2 border-b border-white/10">
+                  {t('header.home', 'Trang Chủ')}
                 </Link>
-                <Link to="/movies" onClick={() => setShowMobileMenu(false)} className="hover:opacity-80 transition-opacity py-2">
-                  Phim
+                <Link to="/movies" onClick={() => setShowMobileMenu(false)} className="hover:text-red-500 transition-colors py-2 border-b border-white/10">
+                  {t('header.movies', 'Phim')}
                 </Link>
-                <Link to="/membership" onClick={() => setShowMobileMenu(false)} className="hover:opacity-80 transition-opacity py-2">
-                  {user?.role?.toLowerCase() === 'user' ? 'Khách Hàng' : user?.role || 'Thành Viên'}
+                <Link to="/membership" onClick={() => setShowMobileMenu(false)} className="hover:text-red-500 transition-colors py-2 border-b border-white/10 capitalize">
+                  {user?.role?.toLowerCase() === 'user' ? 'Khách Hàng' : user?.role || t('header.membership', 'Thành Viên')}
                 </Link>
-                <Link to="/games" onClick={() => setShowMobileMenu(false)} className="hover:opacity-80 transition-opacity py-2 font-bold text-yellow-400">
+                <Link to="/games" onClick={() => setShowMobileMenu(false)} className="hover:text-yellow-400 transition-colors py-2 border-b border-white/10 font-bold text-yellow-500">
                   Mini Game
                 </Link>
-                <Link to="/promotions" onClick={() => setShowMobileMenu(false)} className="hover:opacity-80 transition-opacity py-2">
-                  Khuyến Mãi
+                <Link to="/promotions" onClick={() => setShowMobileMenu(false)} className="hover:text-red-500 transition-colors py-2 border-b border-white/10">
+                  {t('header.promotions', 'Khuyến Mãi')}
                 </Link>
                 {!user && (
-                  <Link to="/login" onClick={() => setShowMobileMenu(false)} className="flex items-center gap-2 py-2 font-semibold">
-                    <User className="w-5 h-5" />
+                  <Link to="/login" onClick={() => setShowMobileMenu(false)} className="flex items-center gap-3 py-3 mt-4 bg-red-600 rounded-xl justify-center font-bold">
+                    <User className="w-6 h-6" />
                     Đăng nhập
                   </Link>
                 )}
               </nav>
             </div>
-          )}
+          </div>
         </div>
       </header>
       <CineBot />

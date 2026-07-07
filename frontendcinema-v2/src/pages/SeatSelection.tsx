@@ -318,7 +318,7 @@ export default function SeatSelection() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-orange-50 to-yellow-50 dark:from-slate-950 dark:to-slate-900 dark:text-white">
       <Header />
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 pb-32 lg:pb-8">
         {/* Movie Info Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -436,14 +436,14 @@ export default function SeatSelection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="lg:col-span-1"
+            className="lg:col-span-1 fixed bottom-0 left-0 right-0 z-50 lg:relative lg:bottom-auto lg:left-auto lg:right-auto lg:z-auto"
           >
-            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-lg p-6 sticky top-24">
-              <h2 className="text-xl font-bold mb-4 border-b border-gray-100 pb-2">Thông Tin Đặt Vé</h2>
+            <div className="bg-white dark:bg-slate-900 rounded-t-3xl lg:rounded-2xl shadow-[0_-10px_40px_rgba(0,0,0,0.1)] lg:shadow-lg p-4 lg:p-6 lg:sticky lg:top-24 border-t lg:border-t-0 border-gray-200 dark:border-gray-800">
+              <h2 className="hidden lg:block text-xl font-bold mb-4 border-b border-gray-100 pb-2">Thông Tin Đặt Vé</h2>
 
               {selectedSeats.length > 0 ? (
-                <div className="space-y-4">
-                  <div>
+                <div className="space-y-0 lg:space-y-4">
+                  <div className="hidden lg:block">
                     <p className="text-sm text-gray-700 dark:text-gray-300 mb-2 font-medium">Ghế bạn đã chọn:</p>
                     <div className="flex flex-wrap gap-2">
                       {selectedSeats.map(seat => (
@@ -463,7 +463,7 @@ export default function SeatSelection() {
                     </div>
                   </div>
 
-                  <div className="border-t border-gray-100 pt-4 space-y-2 max-h-40 overflow-y-auto">
+                  <div className="hidden lg:block border-t border-gray-100 pt-4 space-y-2 max-h-40 overflow-y-auto">
                     {selectedSeats.map(seat => (
                       <div key={seat.id} className="flex justify-between text-sm">
                         <span className="text-gray-800 dark:text-gray-200 font-medium">
@@ -474,19 +474,22 @@ export default function SeatSelection() {
                     ))}
                   </div>
 
-                  <div className="border-t border-gray-100 pt-4">
-                    <div className="flex justify-between items-center mb-4">
-                      <span className="font-bold text-gray-900 dark:text-gray-100">Tổng cộng:</span>
-                      <span className="font-black text-2xl text-red-600">
+                  <div className="lg:border-t lg:border-gray-100 lg:pt-4 flex flex-row lg:flex-col items-center lg:items-stretch justify-between gap-4">
+                    <div className="flex flex-col lg:flex-row justify-between lg:items-center lg:mb-4">
+                      <span className="font-bold text-gray-900 dark:text-gray-100 hidden lg:inline">Tổng cộng:</span>
+                      <div className="lg:hidden text-sm text-gray-600 dark:text-gray-400 font-medium">
+                        {selectedSeats.length} ghế
+                      </div>
+                      <span className="font-black text-xl lg:text-2xl text-red-600">
                         {totalPrice.toLocaleString('vi-VN')}đ
                       </span>
                     </div>
 
                     <button
                       onClick={handleContinue}
-                      className="w-full bg-gradient-to-r from-red-600 to-orange-500 text-white py-3.5 rounded-xl font-bold shadow-md hover:shadow-lg transition-all transform hover:scale-[1.02]"
+                      className="flex-1 lg:w-full bg-gradient-to-r from-red-600 to-orange-500 text-white py-3 lg:py-3.5 px-6 lg:px-0 rounded-xl font-bold shadow-md hover:shadow-lg transition-all transform hover:scale-[1.02] whitespace-nowrap"
                     >
-                      Tiếp Tục Thanh Toán
+                      Thanh Toán
                     </button>
                   </div>
                 </div>

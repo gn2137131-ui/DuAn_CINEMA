@@ -176,7 +176,7 @@ export default function Home() {
               <div className="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center">
                 <Ticket className="w-6 h-6 text-white" />
               </div>
-              <h2 className="text-3xl font-black text-gray-900 dark:text-white uppercase tracking-tight">
+              <h2 className="text-xl md:text-3xl font-black text-gray-900 dark:text-white uppercase tracking-tight">
                 Suất Chiếu Hôm Nay
               </h2>
             </div>
@@ -190,7 +190,7 @@ export default function Home() {
                   <div key={item.movie.id} className="bg-gray-50 dark:bg-[#1a1a1a] p-4 rounded-2xl flex flex-col md:flex-row gap-6 border border-gray-100 dark:border-gray-800 hover:border-red-500/50 transition-colors">
                     {/* Movie Info */}
                     <Link to={`/movies/${item.movie.id}`} className="flex gap-4 md:w-1/3 flex-shrink-0 group">
-                      <div className="w-24 h-36 rounded-xl overflow-hidden shadow-md flex-shrink-0">
+                      <div className="w-20 md:w-24 h-28 md:h-36 rounded-xl overflow-hidden shadow-md flex-shrink-0">
                         <ImageWithFallback src={poster} alt={item.movie.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
                       </div>
                       <div className="flex flex-col py-1">
@@ -216,7 +216,7 @@ export default function Home() {
                             <Link
                               key={st.id}
                               to={`/seats/${item.movie.id}/${st.id}`}
-                              className="bg-white dark:bg-[#222222] border border-gray-200 dark:border-gray-700 hover:border-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 px-4 py-2.5 rounded-xl transition-all group/time"
+                              className="bg-white dark:bg-[#222222] border border-gray-200 dark:border-gray-700 hover:border-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 px-3 py-2 md:px-4 md:py-2.5 rounded-xl transition-all group/time"
                             >
                               <div className="font-bold text-lg text-gray-900 dark:text-white group-hover/time:text-red-600 dark:group-hover/time:text-red-400 flex items-center justify-center">
                                 {time}

@@ -427,7 +427,7 @@ export default function Checkout() {
                     type="text"
                     value={customerInfo.name}
                     onChange={(e) => setCustomerInfo(prev => ({ ...prev, name: e.target.value }))}
-                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-slate-700 rounded-xl focus:border-red-500 focus:outline-none transition-colors"
+                    className="w-full px-4 py-3.5 sm:py-3 text-base border-2 border-gray-200 dark:border-slate-700 rounded-xl focus:border-red-500 focus:outline-none transition-colors"
                     placeholder="Nhập họ và tên"
                   />
                 </div>
@@ -437,7 +437,7 @@ export default function Checkout() {
                     type="email"
                     value={customerInfo.email}
                     onChange={(e) => setCustomerInfo(prev => ({ ...prev, email: e.target.value }))}
-                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-slate-700 rounded-xl focus:border-red-500 focus:outline-none transition-colors"
+                    className="w-full px-4 py-3.5 sm:py-3 text-base border-2 border-gray-200 dark:border-slate-700 rounded-xl focus:border-red-500 focus:outline-none transition-colors"
                     placeholder="Nhập email"
                   />
                 </div>
@@ -447,7 +447,7 @@ export default function Checkout() {
                     type="tel"
                     value={customerInfo.phone}
                     onChange={(e) => setCustomerInfo(prev => ({ ...prev, phone: e.target.value }))}
-                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-slate-700 rounded-xl focus:border-red-500 focus:outline-none transition-colors"
+                    className="w-full px-4 py-3.5 sm:py-3 text-base border-2 border-gray-200 dark:border-slate-700 rounded-xl focus:border-red-500 focus:outline-none transition-colors"
                     placeholder="Nhập số điện thoại"
                   />
                 </div>
@@ -572,15 +572,15 @@ export default function Checkout() {
                 </div>
               ) : (
                 <div>
-                  <div className="flex gap-2 mb-3">
+                  <div className="flex flex-col sm:flex-row gap-2 mb-3">
                     <input
                       type="text"
                       value={voucherCode}
                       onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
                       placeholder="Nhập mã ưu đãi của bạn"
-                      className="flex-1 px-4 py-3 border-2 border-gray-200 dark:border-slate-700 rounded-xl focus:border-red-500 focus:outline-none transition-colors"
+                      className="w-full sm:flex-1 px-4 py-3 sm:py-3 border-2 border-gray-200 dark:border-slate-700 rounded-xl focus:border-red-500 focus:outline-none transition-colors"
                     />
-                    <button onClick={applyVoucher} disabled={isVoucherValidating} className="px-6 py-3 bg-gradient-to-r from-red-600 to-orange-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all flex items-center justify-center disabled:opacity-50">
+                    <button onClick={applyVoucher} disabled={isVoucherValidating} className="w-full sm:w-auto px-6 py-3.5 sm:py-3 bg-gradient-to-r from-red-600 to-orange-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all flex items-center justify-center disabled:opacity-50">
                       {isVoucherValidating ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Áp dụng'}
                     </button>
                   </div>
