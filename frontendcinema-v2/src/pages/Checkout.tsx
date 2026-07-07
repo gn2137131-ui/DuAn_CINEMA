@@ -762,7 +762,7 @@ export default function Checkout() {
 
                   <button
                     onClick={handlePayment}
-                    disabled={isLoading || isSnacksLoading}
+                    disabled={isLoading || isSnacksLoading || !!qrUrl}
                     className="w-full bg-gradient-to-r from-red-600 to-orange-500 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all transform hover:scale-105 disabled:opacity-75 disabled:cursor-not-allowed disabled:scale-100 flex items-center justify-center gap-2"
                   >
                     {isLoading ? (
